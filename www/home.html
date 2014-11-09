@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+
+  <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame 
+       Remove this if you use the .htaccess -->
+  <title>accueil</title>
+<style>
+td
+{
+	text-align:center;
+	padding: 5px;
+}
+</style>
+</head>
+
+<body>
+	<table border="0">
+		<tr> <td> <a href="#">un</a></td><td>deux</td></tr>
+		<tr> <td> trois</td><td>quatre</td></tr>
+	</table>
+</body>
+<script type="text/javascript">
+	var a = document.getElementsByTagName("a")[0];
+	
+	a.onclick=function()
+	{
+		confirm("es-tu sûr ? ");
+	}
+	
+</script>
+</html>
