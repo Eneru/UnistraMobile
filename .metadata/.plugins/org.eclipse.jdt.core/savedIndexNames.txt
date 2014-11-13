@@ -1,0 +1,7 @@
+INDEX VERSION 1.126+C:\Users\Jérémy\Documents\GitHub\UnistraMobile\.metadata\.plugins\org.eclipse.jdt.core
+167757701.index
+1867515126.index
+3102457197.index
+3472358846.index
+1284074322.index
+3756113262.index
