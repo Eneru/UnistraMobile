@@ -1,0 +1,28 @@
+div{
+    border-style: solid;
+    border-width: 2px;
+    /*border-left-width: 1px;
+    border-right-width: 1px;*/
+    border-color: black;
+	position: fixed;
+}
+
+#agenda{
+	top: 0;
+	left: 0;
+}
+
+#edt{
+	top: 0;
+	right: 0;
+}
+
+#chat{
+	bottom: 0;
+	left: 0;
+}
+
+#annuaire{
+	bottom: 0;
+	right: 0;
+}
