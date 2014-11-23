@@ -4,14 +4,32 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="style.css" type="text/css">
 	<style type="text/css"></style>
+
 </header>
 <body>
-	<div id="agenda"><a href="index.html"><img src="icon/agenda-128.png"></a></div>
-	<div id="annuaire"><a href="index.html"><img src="icon/annuaire-128.png"></a></div>
-	<div id="manger"><a href="index.html"><img src="icon/manger-128.png"></a></div>
-	<div id="chat"><a href="index.html"><img src="icon/chat-128.png"></a></div>
+	<!--div id="leftMenu"-->
+		<ul class="navigation">
+			<li class="nav-item"></li>
+			<li class="nav-item"><a href="#">Agenda</a></li>
+			<li class="nav-item"><a href="#">Annuaire</a></li>
+			<li class="nav-item"><a href="#">Menu RU</a></li>
+			<li class="nav-item"><a href="#">Chat</a></li>
+			<li class="nav-item"><a href="#">Paramètres</a></li>
+			<li class="nav-item"><a href="#">Quitter</a></li>
+		</ul>
+		<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+		<label for="nav-trigger"></label>
+		<!--img id="menuButton" src="icon/menu-48.png"-->
+	<!--/div-->
+	<div class="site-wrap">
+		<div id="menu">
+		</div>
+		<a href="index.html" id="agenda"><img src="icon/agenda-128.png"></a>
+		<a href="index.html" id="annuaire"><img src="icon/annuaire-128.png"></a>
+		<a href="index.html" id="manger"><img src="icon/manger-128.png"></a>
+		<a href="index.html" id="chat"><img src="icon/chat-128.png"></a>
+		<div id="footMenu">Flux RSS :</div>
+	</div>
 </body>
-<footer>
-	Flux RSS :
-</footer>
+	
 </html>
