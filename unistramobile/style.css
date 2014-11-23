@@ -1,4 +1,9 @@
+html{
+	overflow: auto;
+}
+
 /*AJOUT*/
+
 
 /* Navigation Menu - Background */
 .navigation {
