@@ -25,6 +25,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -46,11 +47,17 @@ public class Ent {
 	private HttpGet request;
 	private URIBuilder requestBuilder;
 	private HttpContext context;
+	private PoolingHttpClientConnectionManager cm;
 	
 	public Ent(String username, String password) throws ClientProtocolException, URISyntaxException, IOException
 	{
 		this.password=password;
 		this.username=username;
+		 cm = new PoolingHttpClientConnectionManager();
+		// Increase max total connection to 200
+		cm.setMaxTotal(200);
+		// Increase default max connection per route to 20
+		cm.setDefaultMaxPerRoute(20);
 		requestBuilder= new URIBuilder();
 		
 		this.connect(username,password);
@@ -64,7 +71,9 @@ public class Ent {
 	{
 		url =  urlbuilder.build();
 		HttpUriRequest request = new HttpPost(url);
-		HttpClient client=new DefaultHttpClient();
+		CloseableHttpClient client = HttpClients.custom()
+		        .setConnectionManager(cm)
+		        .build();
 		client.execute(request, this.context);
 		HttpResponse response = client.execute(request);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -85,7 +94,9 @@ public class Ent {
 		requestBuilder.setHost("cas.unistra.fr");
 		requestBuilder.setPath("/cas/login");
 		this.url = this.requestBuilder.build();
-		CloseableHttpClient httpclient = new DefaultHttpClient();
+		CloseableHttpClient httpclient = HttpClients.custom()
+		        .setConnectionManager(cm)
+		        .build();
 		HttpUriRequest request = new HttpPost(url);
 		HttpResponse response = httpclient.execute(request);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -118,7 +129,7 @@ public class Ent {
 		  
 		  String numSession=sessionId.split(";")[0].split("=")[1];
 		  CookieStore cookieStore = new BasicCookieStore();
-		  Cookie session = new BasicClientCookie("JSEESIONID",numSession);
+		  Cookie session = new BasicClientCookie("JSESSIONID",numSession);
 		  cookieStore.addCookie(session);
 		  HttpContext context = new BasicHttpContext();
 		  context.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
@@ -146,7 +157,8 @@ public class Ent {
 			  }
 			 
 			  System.out.println(connect+" "+html);
-			  httpclient.close();
+			 
+			 
 		 return connect;
 	}
 	
