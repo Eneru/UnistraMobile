@@ -11,7 +11,8 @@ public class main {
 		// TODO Auto-generated method stub,
 		try {
 			//new Ent("buckenmeier","ckcompoat@24");
-			new Wget("https://adewebcons.unistra.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=17765,27693,22056,21994,4307,22022,22002,4312,4311,4101,30935,26993&projectId=5&calType=ical&nbWeeks=4");
+			Wget wget=new Wget("https://adewebcons.unistra.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=17765,27693,22056,21994,4307,22022,22002,4312,4311,4101,30935,26993&projectId=5&calType=ical&nbWeeks=4");
+			System.out.println(wget.getText());
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

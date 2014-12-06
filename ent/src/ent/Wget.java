@@ -38,26 +38,39 @@ public class Wget
 		String protocole = temp[0];
 		
 		//host
+		
 		temp=temp[1].split("/");
 				
 		String host =temp[0];
 		
-		//path
-		temp=temp[1].split("?");
+		String apresHost="";
+		for(int i =1;i<temp.length;i++)
+		{
+			apresHost+="/"+temp[i];
+		}
 		
+		//path
+		temp = apresHost.split("[?]");
 		String path = temp[0];
 		
+		
+		
+		
 		//param
+		temp=url.split("[?]");
+		String[] params=temp[1].split("&");
 		
-		String params=temp[1];
+		requestBuilder.setScheme(protocole);
+		requestBuilder.setHost(host);
+		requestBuilder.setPath(path);
 		
-		requestBuilder.setScheme("https");
-		requestBuilder.setHost("adewebcons.unistra.fr");
-		requestBuilder.setPath("/jsp/custom/modules/plannings/anonymous_cal.jsp");
-		requestBuilder.addParameter("resources","17765,27693,22056,21994,4307,22022,22002,4312,4311,4102,30935,26993");
-		requestBuilder.addParameter("projectId", "5");
-		requestBuilder.addParameter("calType", "ical");
-		requestBuilder.addParameter("nbWeeks", "4");
+		for(int i=0;i<params.length;i++)
+		{
+			String[] temp1 = params[i].split("=");
+			requestBuilder.addParameter(temp1[0],(String) temp1[1]);
+		}
+		
+		
 		text = this.execute(requestBuilder);
 	}
 	
