@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
@@ -48,6 +49,7 @@ public class Ent {
 	private URIBuilder requestBuilder;
 	private HttpContext context;
 	private PoolingHttpClientConnectionManager cm;
+	private CookieStore cookieStore;
 	
 	public Ent(String username, String password) throws ClientProtocolException, URISyntaxException, IOException
 	{
@@ -62,7 +64,12 @@ public class Ent {
 		
 		this.connect(username,password);
 		requestBuilder.setScheme("https");
-		requestBuilder.setHost("ent.unistra.fr");
+		requestBuilder.setHost("adewebcons.unistra.fr");
+		requestBuilder.setPath("/jsp/custom/modules/plannings/anonymous_cal.jsp");
+		requestBuilder.addParameter("resources","17765,27693,22056,21994,4307,22022,22002,4312,4311,4102,30935,26993");
+		requestBuilder.addParameter("projectId", "5");
+		requestBuilder.addParameter("calType", "ical");
+		requestBuilder.addParameter("nbWeeks", "4");
 		System.out.println(this.execute(requestBuilder));
 		
 	}
@@ -71,11 +78,13 @@ public class Ent {
 	{
 		url =  urlbuilder.build();
 		HttpUriRequest request = new HttpPost(url);
+	//	request.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
 		CloseableHttpClient client = HttpClients.custom()
 		        .setConnectionManager(cm)
 		        .build();
 		client.execute(request, this.context);
 		HttpResponse response = client.execute(request);
+		System.out.println(response.getEntity().getContentType());
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String s = new String();
 		String html = new String();
@@ -98,6 +107,7 @@ public class Ent {
 		        .setConnectionManager(cm)
 		        .build();
 		HttpUriRequest request = new HttpPost(url);
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
 		HttpResponse response = httpclient.execute(request);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String s = new String();
@@ -128,7 +138,7 @@ public class Ent {
 		  // I send a cookie with the session id for persistant connection
 		  
 		  String numSession=sessionId.split(";")[0].split("=")[1];
-		  CookieStore cookieStore = new BasicCookieStore();
+		  cookieStore = new BasicCookieStore();
 		  Cookie session = new BasicClientCookie("JSESSIONID",numSession);
 		  cookieStore.addCookie(session);
 		  HttpContext context = new BasicHttpContext();
@@ -136,6 +146,7 @@ public class Ent {
 		  
 		  this.url= localBuilder.build();
 		  request = new HttpPost(url);
+		  request.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
 		  response = httpclient.execute(request,context);
 		  reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		  s = new String();
@@ -161,8 +172,6 @@ public class Ent {
 			 
 		 return connect;
 	}
-	
-	
 	
 	
 }
