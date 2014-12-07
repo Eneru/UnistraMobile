@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -12,8 +11,7 @@ import android.webkit.WebViewClient;
 /**
  * Class for the main screen.<br>
  * <i>(Allow you to interact with the JS code.)</i>
- * @author MEYEREY
- * @version 1.3
+ * @author MEYERJ
  */
 public class MainActivity extends Activity
 {
@@ -25,17 +23,13 @@ public class MainActivity extends Activity
 	// BOOLEAN STATUS ---------------------------------------------------------------------------------------------------
 	/**
 	 * Variable used to know if we are the other activity.<br>
-	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onPause()
-	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onResume()
-	 * @since 0.4
 	 */
 	private boolean is_on_pause = false;
 
 	//--------------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * The main view (<i>webview</i>) for the utilization of the JS's application crossed wih android native Pen library.
-	 * @since 0.1
+	 * The main view (<i>webview</i>) for the utilization of the JS's application.
 	 */
 	private WebView view_sign;
 	//--------------------------------------------------------------------------------------------------------------------
@@ -46,7 +40,6 @@ public class MainActivity extends Activity
 
 	/**
 	 * Called when the activity is first created.
-	 * @since 0.1
 	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,23 +49,18 @@ public class MainActivity extends Activity
 
 	/**
 	 * Main activity's initialization.
-	 * @since 1.2
 	 */
 	private void _init_main()
 	{
 		setContentView(R.layout.activity_main);
-		final DisplayMetrics displayMetrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
 		//Put the adress here
-		_init_webview("https://www.google.fr");
+		_init_webview("http://buckenmeier.fr");
 	}
 
 	/**
 	 * Function called to initialize the webview.
 	 * @param url
 	 *          The url to load.
-	 * @since 0.4
 	 */
 	@SuppressLint({ "JavascriptInterface", "NewApi" })
 	private void _init_webview(String url)
@@ -87,7 +75,7 @@ public class MainActivity extends Activity
 		view_sign.setWebViewClient(new WebViewClientPerso());
 		view_sign.getSettings().setJavaScriptEnabled(true);
 		view_sign.getSettings().setDomStorageEnabled(true);
-		view_sign.getSettings().setBuiltInZoomControls(true);
+		view_sign.getSettings().setBuiltInZoomControls(false);
 		view_sign.getSettings().setDisplayZoomControls(false);
 		view_sign.loadUrl(url);
 	}
@@ -96,7 +84,6 @@ public class MainActivity extends Activity
 	// ON EVENT -----------------------------------------------------------------------------------------------------------
 	/**
 	 * Called when an other activity is focused.
-	 * @since 0.4
 	 */
 	@Override
 	protected void onPause()
@@ -107,7 +94,6 @@ public class MainActivity extends Activity
 
 	/**
 	 * Called when the activity has the focus, just after creation or pause.
-	 * @since 0.4
 	 */
 	@Override
 	protected void onResume()
@@ -116,24 +102,21 @@ public class MainActivity extends Activity
 		if (is_on_pause)
 		{
 			
-		// Back to "on utilization's state"
-		is_on_pause = false;
+			// Back to "on utilization's state"
+			is_on_pause = false;
 		}
 		// The activity works !
 		super.onResume();
 	}
 
 	/**
-	 * Function called when an activity with result is closed.<br>
-	 * For the moment the event is just specified for the photo's activity.<br>
-	 *     It obtains the jpeg's image's path (in the mobile/tab) and can return a mini picture in bmp to just show a preview.
+	 * Function called when an activity with result is closed.
 	 * @param requestCode
 	 *          The code used in the activity's launcher to recognize each activity (and handle each one separately).
 	 * @param resultCode
 	 *          The code used to handle the activity's status.
 	 * @param data
 	 *          The date in the result of the previous activity.
-	 * @since 1.1
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -146,9 +129,7 @@ public class MainActivity extends Activity
 	// USEFUL SUB-CLASS AND JAVASCRIPT INTERFACE ------------------------------------------------------------------------
 	/**
 	 * Class for utilization of Java in the JavaScript.
-	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onCreate(android.os.Bundle)
-	 * @author MEYEREY
-	 * @version 1.1
+	 * @author MEYEREJ
 	 */
 	private class JSInterface {
 		public JSInterface() {
@@ -158,9 +139,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * Class to allow click on URL in the WebView without open a new page.
-	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onCreate(android.os.Bundle)
-	 * @author MEYEREY
-	 * @version 1.1
+	 * @author MEYERJ
 	 */
 	private class WebViewClientPerso extends WebViewClient {
 		/**
@@ -171,7 +150,6 @@ public class MainActivity extends Activity
 		 *          The url of the new page.
 		 * @return
 		 *          <b>True</b> if it works and <b>no possibility</b> to return false on failure.
-		 * @since 0.2
 		 */
 		@Override
 		public final boolean shouldOverrideUrlLoading(WebView view, String url) {
