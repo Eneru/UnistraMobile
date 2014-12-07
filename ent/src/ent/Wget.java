@@ -21,7 +21,7 @@ public class Wget
 {
 	private PoolingHttpClientConnectionManager cm;
 	private URIBuilder requestBuilder;
-	private String text;
+	protected String text;
 
 	public Wget(String url) throws ClientProtocolException, URISyntaxException, IOException
 	{
@@ -67,7 +67,11 @@ public class Wget
 		for(int i=0;i<params.length;i++)
 		{
 			String[] temp1 = params[i].split("=");
-			requestBuilder.addParameter(temp1[0],(String) temp1[1]);
+			if(temp1.length==2)
+			{
+				requestBuilder.addParameter(temp1[0], temp1[1]);
+			}
+			
 		}
 		
 		
