@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
@@ -81,7 +82,7 @@ public class Wget
 	private String execute(URIBuilder urlbuilder) throws URISyntaxException, ClientProtocolException, IOException
 	{
 		URI url = urlbuilder.build();
-		HttpUriRequest request = new HttpPost(url);
+		HttpUriRequest request = new HttpGet(url);
 	//	request.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
 		CloseableHttpClient client = HttpClients.custom()
 		        .setConnectionManager(cm)
