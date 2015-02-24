@@ -22,6 +22,10 @@
             android:name=".AnnuaireActivity"
             android:label="@string/title_activity_annuaire" >
         </activity>
+        <activity
+            android:name=".CalendrierActivity"
+            android:label="@string/title_activity_calendrier" >
+        </activity>
     </application>
 
 </manifest>

@@ -23,7 +23,14 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(goAnnu);
             }
         });
-
+        Button btn_calen = (Button) findViewById(R.id.button_calen);
+        btn_calen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent goCalen= new Intent(MainActivity.this,CalendrierActivity.class);
+                startActivity(goCalen);
+            }
+        });
     }
 
 
