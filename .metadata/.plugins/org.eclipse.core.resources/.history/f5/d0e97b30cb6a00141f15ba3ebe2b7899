@@ -1,0 +1,287 @@
+package com.example.unistramobile;
+
+import java.io.File;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.DisplayMetrics;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+/**
+ * Class for the main screen.<br>
+ * <i>(Allow you to interact with the JS code.)</i>
+ * @author MEYEREY
+ * @version 1.3
+ */
+public class MainActivity extends Activity
+{
+	//***************************************************{*VARIABLES*}**************************************************
+	// CONSTANTS -------------------------------------------------------------------------------------------------------
+	
+	//-------------------------------------------------------------------------------------------------------------------
+
+	// BOOLEAN STATUS ---------------------------------------------------------------------------------------------------
+	/**
+	 * Variable used to know if we are the other activity.<br>
+	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onPause()
+	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onResume()
+	 * @since 0.4
+	 */
+	private boolean is_on_pause = false;
+
+	//--------------------------------------------------------------------------------------------------------------------
+
+	// SCREEN'S DETAILS --------------------------------------------------------------------------------------------------
+	/**
+	 * Screen's width.
+	 * @since 1.2
+	 */
+	private int larg;
+
+	/**
+	 * Screen's height.
+	 * @since 1.2
+	 */
+	private int longu;
+
+	/**
+	 * The main view (<i>webview</i>) for the utilization of the JS's application crossed wih android native Pen library.
+	 * @since 0.1
+	 */
+	private WebView view_sign;
+	//--------------------------------------------------------------------------------------------------------------------
+	//********************************************************************************************************************
+
+	//****************************************************{*METHODS*}*****************************************************
+	// INITIALIZATION ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Called when the activity is first created.
+	 * @since 0.1
+	 */
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		_init_main();
+	}
+
+	/**
+	 * Main activity's initialization.
+	 * @since 1.2
+	 */
+	private void _init_main()
+	{
+		setContentView(R.layout.main);
+		final DisplayMetrics displayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+		longu = (displayMetrics.widthPixels * 80) / 100;
+		larg = (displayMetrics.heightPixels * 80) / 100;
+
+		//Put the adress here
+		_init_webview("truc");
+	}
+
+	/**
+	 * Function called to initialize the webview.
+	 * @param url
+	 *          The url to load.
+	 * @since 0.4
+	 */
+	@SuppressLint("SetJavaScriptEnabled")
+	private void _init_webview(String url)
+	{
+		if (url == null) throw new NullPointerException("Url not allocated");
+		if (url.length() == 0) throw new IllegalArgumentException("Empty URL is forbidden");
+
+		view_sign = (WebView) findViewById(R.id.webView);
+		final JSInterface jsInterface;
+		jsInterface = new JSInterface();
+		view_sign.addJavascriptInterface(jsInterface, "JSInterface");
+		view_sign.setWebViewClient(new WebViewClientPerso());
+		view_sign.getSettings().setJavaScriptEnabled(true);
+		view_sign.getSettings().setDomStorageEnabled(true);
+		view_sign.getSettings().setBuiltInZoomControls(true);
+		view_sign.getSettings().setDisplayZoomControls(false);
+		view_sign.loadUrl(url);
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+
+	// ON EVENT -----------------------------------------------------------------------------------------------------------
+	/**
+	 * Called when an other activity is focused.
+	 * @since 0.4
+	 */
+	@Override
+	protected void onPause()
+	{
+		is_on_pause = true; // Put the lock off
+		super.onPause(); // Freeze the activity
+	}
+
+	/**
+	 * Called when the activity has the focus, just after creation or pause.
+	 * @since 0.4
+	 */
+	@Override
+	protected void onResume()
+	{
+		// If the activity was stopped before
+		if (is_on_pause)
+		{
+			if(sign_now)
+			{
+				if (!GlobalVars.getVar().equalsIgnoreCase(_DEFAULT_STRING))
+				{
+					final String other_act_val = "data:image/png;base64," + GlobalVars.getVar();
+					final String url2point0 = "javascript:EndCapture('" + other_act_val + "')";
+					view_sign.loadUrl(url2point0);
+					GlobalVars.setVar(_DEFAULT_STRING);
+					sign_now = false;
+				}
+			}
+			else if (capture_now)
+			{
+				if (!pic64.equalsIgnoreCase(_DEFAULT_STRING))
+				{
+					// put code after for capture
+					final String other_act_val = "data:image/png;base64," + pic64;
+					final String url2point0 = "javascript:EndCapture('" + other_act_val + "')";
+					view_sign.loadUrl(url2point0);
+					pic64 = _DEFAULT_STRING;
+					// put code before for capture
+					capture_now = false;
+				}
+			}
+		// Back to "on utilization's state"
+		is_on_pause = false;
+		}
+		// The activity works !
+		super.onResume();
+	}
+
+	/**
+	 * Function called when an activity with result is closed.<br>
+	 * For the moment the event is just specified for the photo's activity.<br>
+	 *     It obtains the jpeg's image's path (in the mobile/tab) and can return a mini picture in bmp to just show a preview.
+	 * @param requestCode
+	 *          The code used in the activity's launcher to recognize each activity (and handle each one separately).
+	 * @param resultCode
+	 *          The code used to handle the activity's status.
+	 * @param data
+	 *          The date in the result of the previous activity.
+	 * @since 1.1
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		super.onActivityResult(requestCode,resultCode,data);
+		// If we take a picture
+		if (requestCode == _CAPTURE_IMAGE && resultCode == RESULT_OK)
+		{
+			try {
+				File f = new File(getExternalFilesDir(null), _FILE_NAME);
+
+				// obtain the base64 of a scaled bitmap in the global variable
+				// scaled to approximately 85% of the resolution's mobile/tablet
+				pic64 = GlobalVars.bitmap_to_String_for_big_bmp(f.getPath(), longu, larg);
+
+				// delete the image in the home directory
+				if (f.exists())
+					f.delete();
+			} catch (NullPointerException e){
+				throw new NullPointerException("The picture used to recognize doesn't exist !");
+			}
+
+		}
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+
+	// USEFUL SUB-CLASS AND JAVASCRIPT INTERFACE ------------------------------------------------------------------------
+	/**
+	 * Class for utilization of Java in the JavaScript.
+	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onCreate(android.os.Bundle)
+	 * @author MEYEREY
+	 * @version 1.1
+	 */
+	private class JSInterface {
+		public JSInterface() {
+
+		}
+
+		/**
+		 * Function used to open the activity with the SCanvasView for drawing the signature.
+		 * @since 0.2
+		 */
+		@JavascriptInterface
+		public final void openSignDrawer() {
+			// Load the SignActivity's class
+			final Intent launcher_sign = new Intent(getApplicationContext(), SignActivity.class);
+			sign_now = true;
+			try{
+				startActivity(launcher_sign);
+			}
+			catch (ActivityNotFoundException ae){
+				throw new ActivityNotFoundException("Unable to open the signature activity ...");
+			}
+		}
+
+		/**
+		 * Function used to open a camera's activity with result.<br>
+		 * <i>(the result is the jpeg image)</i>
+		 * @since 1.1
+		 */
+		@JavascriptInterface
+		public final void takePicture() {
+			final Intent picture_intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+			if (picture_intent.resolveActivity(getPackageManager()) != null)
+			{
+				try{
+					// Choose where you save the file and add it in extra
+					final File photo = new File(getExternalFilesDir(null),_FILE_NAME);
+					picture_intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(photo));
+					capture_now = true;
+					startActivityForResult(picture_intent, _CAPTURE_IMAGE);
+				}
+				catch (NullPointerException e){
+					throw new NullPointerException("Unable to create the picture used for the recognition !");
+				}
+				catch (ActivityNotFoundException ae){
+					throw new ActivityNotFoundException("Unable to open the camera app ...");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Class to allow click on URL in the WebView without open a new page.
+	 * @see com.cm_cic11.DSIG_Android_v0_1.MainActivity#onCreate(android.os.Bundle)
+	 * @author MEYEREY
+	 * @version 1.1
+	 */
+	private class WebViewClientPerso extends WebViewClient {
+		/**
+		 * Allow to keep on the same page by clicking on URL.
+		 * @param view
+		 *          The webview on which one want to open a new page.
+		 * @param url
+		 *          The url of the new page.
+		 * @return
+		 *          <b>True</b> if it works and <b>no possibility</b> to return false on failure.
+		 * @since 0.2
+		 */
+		@Override
+		public final boolean shouldOverrideUrlLoading(WebView view, String url) {
+			view.loadUrl(url);
+			return true;
+		}
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+	//*********************************************************************************************************************
+}

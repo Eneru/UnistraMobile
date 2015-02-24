@@ -1,0 +1,166 @@
+package com.example.unistramobile;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+/**
+ * Class for the main screen.<br>
+ * <i>(Allow you to interact with the JS code.)</i>
+ * @author MEYERJ
+ */
+public class MainActivity extends Activity
+{
+	//***************************************************{*VARIABLES*}**************************************************
+	// CONSTANTS -------------------------------------------------------------------------------------------------------
+	
+	//-------------------------------------------------------------------------------------------------------------------
+
+	// BOOLEAN STATUS ---------------------------------------------------------------------------------------------------
+	/**
+	 * Variable used to know if we are the other activity.<br>
+	 */
+	private boolean is_on_pause = false;
+
+	//--------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * The main view (<i>webview</i>) for the utilization of the JS's application.
+	 */
+	private WebView view_sign;
+	//--------------------------------------------------------------------------------------------------------------------
+	//********************************************************************************************************************
+
+	//****************************************************{*METHODS*}*****************************************************
+	// INITIALIZATION ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Called when the activity is first created.
+	 */
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		_init_main();
+	}
+
+	/**
+	 * Main activity's initialization.
+	 */
+	private void _init_main()
+	{
+		setContentView(R.layout.activity_main);
+		final DisplayMetrics displayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+		//Put the adress here
+		_init_webview("http://buckenmeier.fr");
+	}
+
+	/**
+	 * Function called to initialize the webview.
+	 * @param url
+	 *          The url to load.
+	 */
+	@SuppressLint({ "JavascriptInterface", "NewApi" })
+	private void _init_webview(String url)
+	{
+		if (url == null) throw new NullPointerException("Url not allocated");
+		if (url.length() == 0) throw new IllegalArgumentException("Empty URL is forbidden");
+
+		view_sign = (WebView) findViewById(R.id.webView);
+		final JSInterface jsInterface;
+		jsInterface = new JSInterface();
+		view_sign.addJavascriptInterface(jsInterface, "JSInterface");
+		view_sign.setWebViewClient(new WebViewClientPerso());
+		view_sign.getSettings().setJavaScriptEnabled(true);
+		view_sign.getSettings().setDomStorageEnabled(true);
+		view_sign.getSettings().setBuiltInZoomControls(true);
+		view_sign.getSettings().setDisplayZoomControls(false);
+		view_sign.loadUrl(url);
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+
+	// ON EVENT -----------------------------------------------------------------------------------------------------------
+	/**
+	 * Called when an other activity is focused.
+	 */
+	@Override
+	protected void onPause()
+	{
+		is_on_pause = true; // Put the lock off
+		super.onPause(); // Freeze the activity
+	}
+
+	/**
+	 * Called when the activity has the focus, just after creation or pause.
+	 */
+	@Override
+	protected void onResume()
+	{
+		// If the activity was stopped before
+		if (is_on_pause)
+		{
+			
+		// Back to "on utilization's state"
+		is_on_pause = false;
+		}
+		// The activity works !
+		super.onResume();
+	}
+
+	/**
+	 * Function called when an activity with result is closed.
+	 * @param requestCode
+	 *          The code used in the activity's launcher to recognize each activity (and handle each one separately).
+	 * @param resultCode
+	 *          The code used to handle the activity's status.
+	 * @param data
+	 *          The date in the result of the previous activity.
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		super.onActivityResult(requestCode,resultCode,data);
+		
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+
+	// USEFUL SUB-CLASS AND JAVASCRIPT INTERFACE ------------------------------------------------------------------------
+	/**
+	 * Class for utilization of Java in the JavaScript.
+	 * @author MEYEREJ
+	 */
+	private class JSInterface {
+		public JSInterface() {
+
+		}
+	}
+
+	/**
+	 * Class to allow click on URL in the WebView without open a new page.
+	 * @author MEYEREJ
+	 */
+	private class WebViewClientPerso extends WebViewClient {
+		/**
+		 * Allow to keep on the same page by clicking on URL.
+		 * @param view
+		 *          The webview on which one want to open a new page.
+		 * @param url
+		 *          The url of the new page.
+		 * @return
+		 *          <b>True</b> if it works and <b>no possibility</b> to return false on failure.
+		 */
+		@Override
+		public final boolean shouldOverrideUrlLoading(WebView view, String url) {
+			view.loadUrl(url);
+			return true;
+		}
+	}
+	//---------------------------------------------------------------------------------------------------------------------
+	//*********************************************************************************************************************
+}
