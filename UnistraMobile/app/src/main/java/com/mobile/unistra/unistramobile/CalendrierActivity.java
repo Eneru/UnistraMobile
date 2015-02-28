@@ -9,32 +9,32 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
-import android.util.Log;
-
-import com.mobile.unistra.unistramobile.annuaire.Annuaire;
-import com.mobile.unistra.unistramobile.annuaire.NoResultException;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.GregorianCalendar;
 
 
 public class CalendrierActivity extends ActionBarActivity {
+    EditText txtRessource;
+    EditText txtSemaines;
+    TextView txt;
+    TextView result;
 
-    public void test(){
+    public void exportVersAgenda(String titre, String salle, String description){
        /* Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
         startActivity(intent);*/
         Intent intent = new Intent(Intent.ACTION_INSERT);
+
         intent.setType("vnd.android.cursor.item/event");
-        intent.putExtra(CalendarContract.Events.TITLE, "Learn Android");
-        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, "Home suit home");
-        intent.putExtra(CalendarContract.Events.DESCRIPTION, "Download Examples");
+        intent.putExtra(CalendarContract.Events.TITLE, titre);
+        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, salle);
+        intent.putExtra(CalendarContract.Events.DESCRIPTION, description);
 
         // Setting dates
-        GregorianCalendar calDate = new GregorianCalendar(2012, 10, 02);
+        GregorianCalendar calDate = new GregorianCalendar(2015, 03, 01);
         intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
                 calDate.getTimeInMillis());
         intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
@@ -44,11 +44,11 @@ public class CalendrierActivity extends ActionBarActivity {
         intent.putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true);
 
         // make it a recurring Event
-        intent.putExtra(CalendarContract.Events.RRULE, "FREQ=WEEKLY;COUNT=11;WKST=SU;BYDAY=TU,TH");
+        //intent.putExtra(CalendarContract.Events.RRULE, "FREQ=WEEKLY;COUNT=11;WKST=SU;BYDAY=TU,TH");
 
         // Making it private and shown as busy
-        intent.putExtra(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_PRIVATE);
-        intent.putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+        //intent.putExtra(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_PRIVATE);
+        //intent.putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
 
         this.startActivity(intent);
     }
@@ -58,27 +58,47 @@ public class CalendrierActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-        TextView txt = (TextView) findViewById(R.id.result_txt);
+        //TextView txt = (TextView) findViewById(R.id.result_txt);
 
-        Calendrier calendrier = new Calendrier("4312,4311",4);
-/*
-        try{
+/*      try{
             CalendarBuilder builder;
         }catch (Exception e){
         }
 
         txt.setText("TEST2");
 */
+        //listView = (ListView) findViewById(R.id.expandableListView);
+
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText txtName= (EditText) findViewById(R.id.nameEditText);
+                txtRessource= (EditText) findViewById(R.id.ressourceEditText);
+                txtSemaines= (EditText) findViewById(R.id.weekEditText);
+                txt = (TextView) findViewById(R.id.result_txt);
+                result = (TextView) findViewById(R.id.reslutTextView);
+
+                if(txtRessource.getText().toString().equalsIgnoreCase("ressource")) txtRessource.setText("4312");
+                if(txtSemaines.getText().toString().equalsIgnoreCase("semaines")) txtSemaines.setText("4");
+
+                Calendrier calendrier=null;
                 try {
-                    test();
+                    //calendrier = new Calendrier("4312","4");
+                    calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
+
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
+                if(calendrier != null){
+                    if(calendrier.estValide()) {
+                        result.setText(calendrier.getHtml(), TextView.BufferType.NORMAL);
+                        //exportVersAgenda("On travaille sur le projet","à la maison","");
+                    }else{
+                        result.setText("Erreur au chargement de l'ics");
+                    }
+                }
+                else txt.setText("FAILURE");
             }
         });
     }
