@@ -120,8 +120,4 @@ public class CalendrierActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void onMetTout(){
-        calendrier.getHtml();
-    }
 }
