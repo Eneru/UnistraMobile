@@ -23,7 +23,23 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(goAnnu);
             }
         });
+        Button btn_calen = (Button) findViewById(R.id.button_calen);
+        btn_calen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent goCalen= new Intent(MainActivity.this,CalendrierActivity.class);
+                startActivity(goCalen);
+            }
+        });
 
+        Button btn_map = (Button) findViewById(R.id.button_map);
+        btn_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent goMap= new Intent(MainActivity.this,MapsActivity.class);
+                startActivity(goMap);
+            }
+        });
     }
 
 
