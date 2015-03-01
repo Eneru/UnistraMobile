@@ -9,18 +9,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
+
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
 
 public class CalendrierActivity extends ActionBarActivity {
+    Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
     TextView txt;
     TextView result;
+    ArrayList<String> entrees;
 
     public void exportVersAgenda(String titre, String salle, String description){
        /* Intent intent = new Intent(Intent.ACTION_INSERT);
@@ -58,17 +60,7 @@ public class CalendrierActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-        //TextView txt = (TextView) findViewById(R.id.result_txt);
-
-/*      try{
-            CalendarBuilder builder;
-        }catch (Exception e){
-        }
-
-        txt.setText("TEST2");
-*/
-        //listView = (ListView) findViewById(R.id.expandableListView);
-
+        entrees = new ArrayList<String>();
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,9 +73,7 @@ public class CalendrierActivity extends ActionBarActivity {
                 if(txtRessource.getText().toString().equalsIgnoreCase("ressource")) txtRessource.setText("4312");
                 if(txtSemaines.getText().toString().equalsIgnoreCase("semaines")) txtSemaines.setText("4");
 
-                Calendrier calendrier=null;
                 try {
-                    //calendrier = new Calendrier("4312","4");
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
 
                 } catch (Exception e) {
@@ -91,12 +81,17 @@ public class CalendrierActivity extends ActionBarActivity {
                 }
 
                 if(calendrier != null){
-                    if(calendrier.estValide()) {
-                        result.setText(calendrier.getHtml(), TextView.BufferType.NORMAL);
+                   if(calendrier.estValide()) {
+                       entrees = calendrier.donnerEvents();//entrees.add(calendrier.premierEvent());
+                       String resulta="";
+                        for(String p : entrees){
+                            resulta += calendrier.afficherEvent(p) + '\n';
+                        }
+                       result.setText(resulta);
                         //exportVersAgenda("On travaille sur le projet","à la maison","");
-                    }else{
-                        result.setText("Erreur au chargement de l'ics");
-                    }
+                   }else{
+                       result.setText("Erreur au chargement de l'ics");
+                   }
                 }
                 else txt.setText("FAILURE");
             }
@@ -124,5 +119,9 @@ public class CalendrierActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onMetTout(){
+        calendrier.getHtml();
     }
 }
