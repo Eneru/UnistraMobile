@@ -1,13 +1,16 @@
 package com.mobile.unistra.unistramobile.calendrier;
 
-import com.mobile.unistra.unistramobile.annuaire.Wget;
+import com.mobile.unistra.unistramobile.calendrier.Wget;
 import net.fortuna.ical4j.model.Calendar;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Alexandre on 22-02-15.
  */
 public class Calendrier extends Wget {
     private Calendar calendar;
+    private Date date;
 
     /**
      * Constructeur de Calendrier. Il utilise la classe <b>Wget</b> de Nicolas.
@@ -32,9 +35,61 @@ public class Calendrier extends Wget {
      * @return <b>true</b>, si le fichier commence bien par <emph>BEGIN:VCALENDAR</emph> et termine par <emph>END:VCALENDAR</emph>.
      */
     public boolean estValide(){
-        if(this.getHtml().substring(0,15).equalsIgnoreCase("BEGIN:VCALENDAR")
-                && this.getHtml().substring(this.getHtml().length() -13).equalsIgnoreCase("END:VCALENDAR"))
+        if(this.getHtml().substring(0,15).equalsIgnoreCase("BEGIN:VCALENDAR"))
             return true;
         else return false;
+    }
+
+    /**
+     * Renvoit le premier nom de matière qui figure dans <emph>entree</emph>.
+     * @param entree Chaîne de caractère à analyser ; si possible un seul événement à la fois.
+     * @return Le nom de la matière seulement, sous forme de <b>String</b>.
+     */
+    public String nomMatiere(String entree){
+        return entree.substring(entree.indexOf("SUMMARY:") + 8, entree.indexOf('\n', entree.indexOf("SUMMARY:") + 8));
+    }
+
+
+    public String nomLieu(String entree){
+        //if(entree.indexOf("TDLOCATION") < entree.indexOf("LOCATION"))
+        return entree.substring(entree.indexOf("LOCATION:") + 9, entree.indexOf('\n', entree.indexOf("LOCATION:") + 9));
+    }
+
+    public String jourDebut(String entree){
+        int truc = entree.indexOf("DTSTART:")+14;
+        return entree.substring(truc, truc + 2);
+    }
+
+    public String moisDebut(String entree){
+        int truc = entree.indexOf("DTSTART:")+12;
+        return entree.substring(truc, truc + 2);
+    }
+
+    public String anneeDebut(String entree){
+        int truc = entree.indexOf("DTSTART:")+8;
+        return entree.substring(truc, truc + 4);
+    }
+
+    public String afficherEvent(String entree){
+        return nomMatiere(entree) + " : " + jourDebut(entree) + "/" + moisDebut(entree) + "/" + anneeDebut(entree) + ", en salle : "+ nomLieu(entree);
+    }
+
+    /**
+     * Donne la liste de tous les événements en format brut : <emph>BEGIN:VEVENT ... END:VEVENT</emph>.
+     * <br>On pourra utiliser afficherEvent(p) sur chaque String p de ce tableau, ou n'importe quelle autre méthode de parsage.
+     * @return Un tableau de String, non ordonné.
+     */
+    public ArrayList<String> donnerEvents(){
+        String parse = this.getHtml();//.substring(this.getHtml().indexOf("BEGIN:VCALENDAR")+16);
+
+        ArrayList<String> resultat = new ArrayList<String>();
+        while(parse.indexOf("END:VCALENDAR") != 0){
+            resultat.add(parse.substring(
+                    parse.indexOf("BEGIN:VEVENT")+13,
+                    parse.indexOf("END:VEVENT")
+            ));
+            parse = parse.substring(parse.indexOf("END:VEVENT")+11);
+        }
+        return resultat;
     }
 }
