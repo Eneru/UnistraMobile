@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 public class Wget extends Thread
 {
     private String url;
-    private String html;
+    protected String html;
 
     public Wget(String url)
     {
@@ -41,12 +41,15 @@ public class Wget extends Thread
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
             String s = new String();
             html = new String();
             try {
                 while(( s = reader.readLine())!=null)
                 {
-                    html+=s;
+                    //html+=s;
+                    concatHtml(s);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -60,6 +63,10 @@ public class Wget extends Thread
     {
         return html;
     }
+
+        protected void concatHtml(String s){
+            html += s;
+        }
 
 
 }
