@@ -22,7 +22,6 @@ public class CalendrierActivity extends ActionBarActivity {
     EditText txtSemaines;
     TextView txt;
     TextView result;
-    ArrayList<String> entrees;
 
     public void exportVersAgenda(String titre, String salle, String description){
        /* Intent intent = new Intent(Intent.ACTION_INSERT);
@@ -60,7 +59,6 @@ public class CalendrierActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-        entrees = new ArrayList<String>();
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,25 +73,18 @@ public class CalendrierActivity extends ActionBarActivity {
 
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
                 if(calendrier != null){
                     if(calendrier.estValide()) {
-                        entrees = calendrier.donnerEvents();//entrees.add(calendrier.premierEvent());
-                        String resulta="";
-                        for(String p : entrees){
-                            resulta += calendrier.afficherEvent(p) + '\n';
-                        }
-                        result.setText(resulta);
+                        result.setText(calendrier.afficherEvent());
                         //exportVersAgenda("On travaille sur le projet","à la maison","");
                     }else{
                         result.setText("Erreur au chargement de l'ics");
                     }
-                }
-                else txt.setText("FAILURE");
+                }else txt.setText("FAILURE");
             }
         });
     }

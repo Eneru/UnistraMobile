@@ -1,22 +1,22 @@
 package com.mobile.unistra.unistramobile.calendrier;
 
 import com.mobile.unistra.unistramobile.annuaire.Wget;
-import net.fortuna.ical4j.model.Calendar;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
  * Created by Alexandre on 22-02-15.
  */
 public class Calendrier extends Wget {
-    TimeZone fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
+    TimeZone fuseauHoraire;
+    ArrayList<Event> listeEvents;
 
     @Override
     protected void concatHtml(String s) {
         html += s + '\n';
     }
-
 
     /**
      * Constructeur de Calendrier. Il utilise la classe <b>Wget</b> de Nicolas.
@@ -32,6 +32,9 @@ public class Calendrier extends Wget {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
+        this.listeEvents = listeEvents();
+
         //Le tri des informations reçues aura probablement lieu ici
         this.interrupt();
     }
@@ -55,67 +58,90 @@ public class Calendrier extends Wget {
         return entree.substring(entree.indexOf("SUMMARY:") + 8, entree.indexOf('\n', entree.indexOf("SUMMARY:") + 8));
     }
 
-
     public String nomLieu(String entree){
         return entree.substring(entree.indexOf("LOCATION:") + 9, entree.indexOf('\n', entree.indexOf("LOCATION:") + 9));
     }
 
-    /**
-     * L'heure de début.
-     * @param entree
-     * @param date      La date à laquelle l'heure s'applique : permet d'adapter l'heure au fuseau horaire et à l'heure d'hiver/été
-     * @return          Un String contenant l'heure et les minutes, séparés d'un 'h'
-     */
-    public String heureDebut(String entree, Date date){
-        int offset = entree.indexOf("DTSTART:")+17;
-        int heure = Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    public Date dateFin(String entree){
+        int annee = anneeFin(entree);
+        int mois = moisFin(entree);
+        int jour = jourFin(entree);
+        int heure = heureFin(entree);
+        int minutes = minutesFin(entree);
 
-        //Si on est en heure d'été, on rajoute une heure
-        if(fuseauHoraire.inDaylightTime(date)) heure ++;
-
-        return heure + "h"+ entree.substring(offset +2, offset + 4);
+        Date dateFin = new Date(annee,mois,jour,heure,minutes);
+        if (fuseauHoraire.inDaylightTime(dateFin)) dateFin.setHours(heure++);
+        return dateFin;
     }
 
-    /**
-     * L'heure de fin.
-     * @param entree
-     * @param date      La date à laquelle l'heure s'applique : permet d'adapter l'heure au fuseau horaire et à l'heure d'hiver/été
-     * @return          Un String contenant l'heure et les minutes, séparés d'un 'h'
-     */
-    public String heureFin(String entree, Date date){
-        int offset = entree.indexOf("DTEND:")+15;
-        int heure = Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
-
-        //Si on est en heure d'été, on rajoute une heure
-        if(fuseauHoraire.inDaylightTime(date)) heure ++;
-
-        return heure + "h"+ entree.substring(offset +2, offset + 4);
+    public int minutesFin(String entree){
+        int offset = entree.indexOf("DTEND:") + 17;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
     }
 
-    public String jourDebut(String entree){
+    public int heureFin(String entree) {
+        int offset = entree.indexOf("DTEND:") + 15;
+        return Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    }
+
+    public int jourFin(String entree){
+        int offset = entree.indexOf("DTEND:")+12;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int moisFin(String entree){
+        int offset = entree.indexOf("DTEND:")+10;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int anneeFin(String entree){
+        int offset = entree.indexOf("DTEND:")+6;
+        return Integer.parseInt(entree.substring(offset, offset + 4));
+    }
+
+    public Date dateDebut(String entree) {
+        int annee = anneeDebut(entree);
+        int mois = moisDebut(entree);
+        int jour = jourDebut(entree);
+        int heure = heureDebut(entree);
+        int minutes = minutesDebut(entree);
+
+        Date dateDebut = new Date(annee - 1900, mois, jour, heure, minutes);
+        if (fuseauHoraire.inDaylightTime(dateDebut)) dateDebut.setHours(heure++);
+        return dateDebut;
+    }
+
+    public int minutesDebut(String entree){
+        int offset = entree.indexOf("DTSTART:") + 19;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int heureDebut(String entree) {
+        int offset = entree.indexOf("DTSTART:") + 17;
+        return Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    }
+
+    public int jourDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+14;
-        return entree.substring(offset, offset + 2);
+        return Integer.parseInt(entree.substring(offset, offset + 2));
     }
 
-    public String moisDebut(String entree){
+    public int moisDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+12;
-        return entree.substring(offset, offset + 2);
+        return Integer.parseInt(entree.substring(offset, offset + 2));
     }
 
-    public String anneeDebut(String entree){
+    public int anneeDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+8;
-        return entree.substring(offset, offset + 4);
+        return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
-
-    public String afficherEvent(String entree){
-        int jour = Integer.parseInt(jourDebut(entree));
-        int mois = Integer.parseInt(moisDebut(entree));
-        int annee = Integer.parseInt(anneeDebut(entree));
-        String heureDebut = heureDebut(entree, new Date(annee,mois,jour));
-        String heureFin = heureFin(entree, new Date(annee,mois,jour));
-
-        return nomMatiere(entree) + " : de "+ heureDebut + " à " + heureFin + " le " + jourDebut(entree) + "/" + moisDebut(entree) + "/" + anneeDebut(entree) + ", en salle : "+ nomLieu(entree);
+    public String afficherEvent(){
+        String affichage="";
+        for(Event event:listeEvents){
+            affichage += event.titreCours + " : "+ event.salle + "\n\tà "+ event.dateDebut.get(GregorianCalendar.HOUR_OF_DAY)+"h"+event.dateDebut.get(GregorianCalendar.MINUTE)  + " le "+ event.dateDebut.get(GregorianCalendar.DAY_OF_MONTH) +"/"+ event.dateDebut.get(GregorianCalendar.MONTH)+"/"+ event.dateDebut.get(GregorianCalendar.YEAR)+"\n";
+        }
+        return affichage;
     }
 
     /**
@@ -139,20 +165,34 @@ public class Calendrier extends Wget {
         }
         return resultat;
     }
+
+    public ArrayList<Event> listeEvents(){
+        ArrayList<Event> liste = new ArrayList<Event>();
+        for(String entree: donnerEvents())
+            liste.add(genererEvent(entree));
+        return liste;
+    }
+
+    private Event genererEvent(String entree){
+        return new Event(nomMatiere(entree),nomLieu(entree),"",dateDebut(entree),dateFin(entree));
+    }
 }
 
 class Event {
+    GregorianCalendar dateDebut;
+    GregorianCalendar dateFin;
     String titreCours;
     String salle;
     String description;
-    Date dateDebut;
-    Date dateFin;
-    int heureDebut;
-    int minutesDebut;
-    int heureFin;
-    int minutesFin;
 
-    public Event(){
+    public Event(String titreCours, String salle, String description, Date dateDebut, Date dateFin){
+        this.titreCours = titreCours;
+        this.salle = salle;
+        this.description = description;
+        this.dateDebut =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+        this.dateFin = new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
 
+        this.dateDebut.setTime(dateDebut);
+        this.dateFin.setTime(dateFin);
     }
 }
