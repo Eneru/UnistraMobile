@@ -92,4 +92,13 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Exporter"
+        android:id="@+id/exportButton"
+        android:layout_below="@+id/weekEditText"
+        android:layout_alignRight="@+id/scrollView"
+        android:layout_alignEnd="@+id/scrollView" />
+
 </RelativeLayout>

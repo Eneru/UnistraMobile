@@ -11,8 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
-
-import java.util.ArrayList;
+import com.mobile.unistra.unistramobile.calendrier.Event;
 import java.util.GregorianCalendar;
 
 
@@ -23,10 +22,26 @@ public class CalendrierActivity extends ActionBarActivity {
     TextView txt;
     TextView result;
 
-    public void exportVersAgenda(String titre, String salle, String description){
+    public void exportAgenda(){
+        for(Event event:calendrier.listeEvents()){
+            Intent intent = new Intent(Intent.ACTION_INSERT);
+
+            intent.setType("vnd.android.cursor.item/event");
+            intent.putExtra(CalendarContract.Events.TITLE, event.getTitre());
+            intent.putExtra(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
+            intent.putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription());
+
+            // Setting dates
+            intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                    event.getDebut().getTimeInMillis());
+            intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
+                    event.getFin().getTimeInMillis());
+
+            this.startActivity(intent);
+        }
        /* Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
-        startActivity(intent);*/
+        startActivity(intent);*//*
         Intent intent = new Intent(Intent.ACTION_INSERT);
 
         intent.setType("vnd.android.cursor.item/event");
@@ -51,13 +66,22 @@ public class CalendrierActivity extends ActionBarActivity {
         //intent.putExtra(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_PRIVATE);
         //intent.putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
 
-        this.startActivity(intent);
+        this.startActivity(intent);*/
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
+
+        Button btn_export = (Button) findViewById(R.id.exportButton);
+        btn_export.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(calendrier!=null && !calendrier.listeEvents().isEmpty())
+                    exportAgenda();
+            }
+        });
 
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {

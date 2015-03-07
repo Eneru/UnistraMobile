@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+
 /**
  * Created by Alexandre on 22-02-15.
  */
@@ -69,7 +70,7 @@ public class Calendrier extends Wget {
         int heure = heureFin(entree);
         int minutes = minutesFin(entree);
 
-        Date dateFin = new Date(annee,mois,jour,heure,minutes);
+        Date dateFin = new Date(annee-1900,mois,jour,heure,minutes);
         if (fuseauHoraire.inDaylightTime(dateFin)) dateFin.setHours(heure++);
         return dateFin;
     }
@@ -91,7 +92,7 @@ public class Calendrier extends Wget {
 
     public int moisFin(String entree){
         int offset = entree.indexOf("DTEND:")+10;
-        return Integer.parseInt(entree.substring(offset, offset + 2));
+        return Integer.parseInt(entree.substring(offset, offset + 2))-1;
     }
 
     public int anneeFin(String entree){
@@ -128,7 +129,7 @@ public class Calendrier extends Wget {
 
     public int moisDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+12;
-        return Integer.parseInt(entree.substring(offset, offset + 2));
+        return Integer.parseInt(entree.substring(offset, offset + 2))-1;
     }
 
     public int anneeDebut(String entree){
@@ -139,7 +140,7 @@ public class Calendrier extends Wget {
     public String afficherEvent(){
         String affichage="";
         for(Event event:listeEvents){
-            affichage += event.titreCours + " : "+ event.salle + "\n\tà "+ event.dateDebut.get(GregorianCalendar.HOUR_OF_DAY)+"h"+event.dateDebut.get(GregorianCalendar.MINUTE)  + " le "+ event.dateDebut.get(GregorianCalendar.DAY_OF_MONTH) +"/"+ event.dateDebut.get(GregorianCalendar.MONTH)+"/"+ event.dateDebut.get(GregorianCalendar.YEAR)+"\n";
+            affichage += event.titreCours + " : "+ event.salle + "\n\tà "+ event.getDebut().getTimeInMillis() +"\n";//event.getHeureDebut()+"h"+event.getMinuteDebut()  + " le "+ event.dateDebut.get(GregorianCalendar.DAY_OF_MONTH) +"/"+ event.dateDebut.get(GregorianCalendar.MONTH)+"/"+ event.dateDebut.get(GregorianCalendar.YEAR)+"\n";
         }
         return affichage;
     }
@@ -175,24 +176,5 @@ public class Calendrier extends Wget {
 
     private Event genererEvent(String entree){
         return new Event(nomMatiere(entree),nomLieu(entree),"",dateDebut(entree),dateFin(entree));
-    }
-}
-
-class Event {
-    GregorianCalendar dateDebut;
-    GregorianCalendar dateFin;
-    String titreCours;
-    String salle;
-    String description;
-
-    public Event(String titreCours, String salle, String description, Date dateDebut, Date dateFin){
-        this.titreCours = titreCours;
-        this.salle = salle;
-        this.description = description;
-        this.dateDebut =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
-        this.dateFin = new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
-
-        this.dateDebut.setTime(dateDebut);
-        this.dateFin.setTime(dateFin);
     }
 }
