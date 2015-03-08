@@ -1,45 +1,58 @@
 package com.mobile.unistra.unistramobile;
 
 import android.location.Location;
-import android.location.LocationListener;
+import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements LocationListener{
+public class MapsActivity extends FragmentActivity implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LocationManager locationManager;
-    private Marker marker;
+    private Location mLastLocation;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
-        locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 150,this);
-        marker=mMap.addMarker(new MarkerOptions().title("Vous êtes ici").position(new LatLng(0, 0)));
+        mMap.setMyLocationEnabled(true);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        createLocationRequest();
+
+    }
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
+    protected void startLocationUpdates() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+    }
+    
     @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
-        //Obtention de la référence du service
-        locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-        //Si le GPS est disponible, on s'y abonne
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            abonnementGPS();
-        }
     }
 
     /**
@@ -77,77 +90,37 @@ public class MapsActivity extends FragmentActivity implements LocationListener{
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+       // mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
-
-    public void onPause() {
-
-        super.onPause();
-
-
-        //On appelle la méthode pour se désabonner
-        desabonnementGPS();
-
-    }
-
-    /**
-     * Méthode permettant de s'abonner à la localisation par GPS.
-     */
-    public void abonnementGPS() {
-        //On s'abonne
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
-    }
-
-    /**
-     * Méthode permettant de se désabonner de la localisation par GPS.
-     */
-    public void desabonnementGPS() {
-        //Si le GPS est disponible, on s'y abonne
-        locationManager.removeUpdates(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void onProviderDisabled(final String provider) {
-        //Si le GPS est désactivé on se désabonne
-        if("gps".equals(provider)) {
-            desabonnementGPS();
+    public void onLocationChanged(Location where) {
+       // mMap.addMarker(new MarkerOptions().position(new LatLng( where.getLongitude(),where.getLatitude())).title("ICI abruti !! "));
+    }
+
+
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+          //  mMap.addMarker(new MarkerOptions().position(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude())).title("ICI abruti !! "));
+           /* mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
+            mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));*/
         }
-    }
+        startLocationUpdates();
 
-    /**
-     * {@inheritDoc}
-     */
+}
+
     @Override
-    public void onProviderEnabled(final String provider) {
-        //Si le GPS est activé on s'abonne
-        if("gps".equals(provider)) {
-            abonnementGPS();
-        }
+    public void onConnectionSuspended(int i) {
+
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        //On affiche dans un Toat la nouvelle Localisation
-        StringBuilder msg = new StringBuilder("lat : ");
-        msg.append(location.getLatitude());
-        msg.append( "; lng : ");
-        msg.append(location.getLongitude());
-
-        Toast.makeText(this, msg.toString(), Toast.LENGTH_SHORT).show();
-
-        //Mise à jour des coordonnées
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        marker.setPosition(latLng);
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onStatusChanged(final String provider, final int status, final Bundle extras) { }
 }
