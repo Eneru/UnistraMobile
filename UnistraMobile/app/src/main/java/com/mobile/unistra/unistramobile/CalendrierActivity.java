@@ -1,6 +1,11 @@
 package com.mobile.unistra.unistramobile;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -10,8 +15,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
+
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 
@@ -21,6 +30,48 @@ public class CalendrierActivity extends ActionBarActivity {
     EditText txtSemaines;
     TextView txt;
     TextView result;
+
+    private int UpdateCalendarEntry(int entryID) {
+        int iNumRowsUpdated = 0;
+
+        ContentValues event = new ContentValues();
+        event.put("title", "Changed Event Title");
+        event.put("hasAlarm", 0); // 0 for false, 1 for true
+
+        String calendarProviderName="";
+        Uri eventsUri = Uri.parse(calendarProviderName+"/events");
+        Uri eventUri = ContentUris.withAppendedId(eventsUri, entryID);
+
+        iNumRowsUpdated = getContentResolver().update(eventUri, event, null,
+                null);
+
+        return iNumRowsUpdated;
+    }
+
+    /*public void AddEvent(Context ctx, String title, Calendar start, Calendar end) {
+        ContentResolver contentResolver = ctx.getContentResolver();
+
+        ContentValues calendarEventContentValues = new ContentValues();
+        calendarEventContentValues.put(CalendarContract.Events.CALENDAR_ID, 1); // Hard code to pick first one
+        calendarEventContentValues.put(CalendarContract.Events.TITLE, title);
+        calendarEventContentValues.put(CalendarContract.Events.DTSTART, start.getTimeInMillis());
+        calendarEventContentValues.put(CalendarContract.Events.DTEND, end.getTimeInMillis());
+        calendarEventContentValues.put(CalendarContract.Events.EVENT_TIMEZONE, start.getTimeZone().toString());
+        Uri uri = contentResolver.insert(Uri.parse(eventsProviderName), calendarEventContentValues);
+
+        if (hasAlert == true) {
+            long eventId = Long.parseLong(uri.getLastPathSegment());
+            calendarEventContentValues.clear();
+            calendarEventContentValues.put("event_id", eventId);
+            calendarEventContentValues.put("method", 1);
+            calendarEventContentValues.put("minutes", alertTime);
+            contentResolver.insert(Uri.parse(reminderProviderName), calendarEventContentValues);
+        }
+
+        int id = Integer.parseInt(uri.getLastPathSegment());
+        Toast.makeText(ctx, "Created Calendar Event " + id,
+                Toast.LENGTH_SHORT).show();
+    }*/
 
     public void exportAgenda(){
         for(Event event:calendrier.listeEvents()){
