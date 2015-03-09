@@ -1,9 +1,7 @@
 package com.mobile.unistra.unistramobile;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.CalendarContract;
@@ -15,13 +13,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 
 public class CalendrierActivity extends ActionBarActivity {
@@ -30,23 +24,6 @@ public class CalendrierActivity extends ActionBarActivity {
     EditText txtSemaines;
     TextView txt;
     TextView result;
-
-    private int UpdateCalendarEntry(int entryID) {
-        int iNumRowsUpdated = 0;
-
-        ContentValues event = new ContentValues();
-        event.put("title", "Changed Event Title");
-        event.put("hasAlarm", 0); // 0 for false, 1 for true
-
-        String calendarProviderName="";
-        Uri eventsUri = Uri.parse(calendarProviderName+"/events");
-        Uri eventUri = ContentUris.withAppendedId(eventsUri, entryID);
-
-        iNumRowsUpdated = getContentResolver().update(eventUri, event, null,
-                null);
-
-        return iNumRowsUpdated;
-    }
 
     /*public void AddEvent(Context ctx, String title, Calendar start, Calendar end) {
         ContentResolver contentResolver = ctx.getContentResolver();
@@ -73,7 +50,39 @@ public class CalendrierActivity extends ActionBarActivity {
                 Toast.LENGTH_SHORT).show();
     }*/
 
+
+    /**
+     * Méthode exportant la liste d'événements vers l'agenda par défaut du téléphone.
+     */
     public void exportAgenda(){
+        for(Event event : calendrier.listeEvents()) {
+            ContentResolver cr = getContentResolver();
+            ContentValues values = new ContentValues();
+
+            values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
+            values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
+            values.put(CalendarContract.Events.TITLE, event.getTitre());
+            values.put(CalendarContract.Events.DESCRIPTION, event.getDescription());
+            values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
+            TimeZone timeZone = event.getDebut().getTimeZone();
+            values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+
+            // default calendar
+            values.put(CalendarContract.Events.CALENDAR_ID, 1);
+
+            //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
+            //        + dtUntill);
+            //for one hour
+            //values.put(CalendarContract.Events.DURATION, "+P1H");
+
+            //values.put(CalendarContract.Events.HAS_ALARM, 1);
+
+            // insert event to calendar
+            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+        }
+    }
+
+    public void exportAgendaOld(){
         for(Event event:calendrier.listeEvents()){
             Intent intent = new Intent(Intent.ACTION_INSERT);
 
@@ -87,37 +96,8 @@ public class CalendrierActivity extends ActionBarActivity {
                     event.getDebut().getTimeInMillis());
             intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
                     event.getFin().getTimeInMillis());
-
             this.startActivity(intent);
         }
-       /* Intent intent = new Intent(Intent.ACTION_INSERT);
-        intent.setData(CalendarContract.Events.CONTENT_URI);
-        startActivity(intent);*//*
-        Intent intent = new Intent(Intent.ACTION_INSERT);
-
-        intent.setType("vnd.android.cursor.item/event");
-        intent.putExtra(CalendarContract.Events.TITLE, titre);
-        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, salle);
-        intent.putExtra(CalendarContract.Events.DESCRIPTION, description);
-
-        // Setting dates
-        GregorianCalendar calDate = new GregorianCalendar(2015, 03, 01);
-        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
-                calDate.getTimeInMillis());
-        intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
-                calDate.getTimeInMillis());
-
-        // make it a full day event
-        intent.putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true);
-
-        // make it a recurring Event
-        //intent.putExtra(CalendarContract.Events.RRULE, "FREQ=WEEKLY;COUNT=11;WKST=SU;BYDAY=TU,TH");
-
-        // Making it private and shown as busy
-        //intent.putExtra(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_PRIVATE);
-        //intent.putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
-
-        this.startActivity(intent);*/
     }
 
     @Override
@@ -131,7 +111,9 @@ public class CalendrierActivity extends ActionBarActivity {
             public void onClick(View view) {
                 if(calendrier!=null && !calendrier.listeEvents().isEmpty())
                     exportAgenda();
+                //    exportAgendaOld();
             }
+
         });
 
         Button btn_search = (Button) findViewById(R.id.button_search);
