@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -15,7 +15,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button btn_annu = (Button) findViewById(R.id.button_annu);
+        ImageButton btn_annu = (ImageButton) findViewById(R.id.imageButton4);
         btn_annu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -23,7 +23,7 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(goAnnu);
             }
         });
-        Button btn_calen = (Button) findViewById(R.id.button_calen);
+        ImageButton btn_calen = (ImageButton) findViewById(R.id.imageButton);
         btn_calen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -32,7 +32,7 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        Button btn_map = (Button) findViewById(R.id.button_map);
+        ImageButton btn_map = (ImageButton) findViewById(R.id.imageButton3);
         btn_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

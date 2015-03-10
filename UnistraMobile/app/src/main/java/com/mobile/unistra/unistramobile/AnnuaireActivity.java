@@ -1,5 +1,7 @@
 package com.mobile.unistra.unistramobile;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -49,6 +51,14 @@ public class AnnuaireActivity extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_annuaire, menu);
         return true;
+    }
+
+    private void call_teacher (String number)
+    {
+        String nb = "tel:" + number;
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse(nb));
+        startActivity(intent);
     }
 
     @Override
