@@ -137,6 +137,21 @@ public class Calendrier extends Wget {
         return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
+    public String description(String entree){
+        /*int debut = entree.indexOf("DESCRIPTION:")+12;
+        int fin = entree.indexOf("\n",debut);
+
+        return entree.substring(debut,fin);*/
+        return "";
+    }
+
+    public String Uid(String entree){
+        /*int debut = entree.indexOf("UID:")+4;
+        int fin = entree.indexOf("\n");
+        return entree.substring(debut, fin);*/
+        return "";
+    }
+
     public String afficherEvent(){
         String affichage="";
         for(Event event:listeEvents){
@@ -175,6 +190,6 @@ public class Calendrier extends Wget {
     }
 
     private Event genererEvent(String entree){
-        return new Event(nomMatiere(entree),nomLieu(entree),"",dateDebut(entree),dateFin(entree));
+        return new Event(Uid(entree), nomMatiere(entree),nomLieu(entree),description(entree),dateDebut(entree),dateFin(entree));
     }
 }
