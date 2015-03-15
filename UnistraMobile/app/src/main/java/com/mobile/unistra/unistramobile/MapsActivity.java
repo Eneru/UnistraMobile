@@ -1,5 +1,6 @@
 package com.mobile.unistra.unistramobile;
 
+import android.graphics.Color;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
@@ -11,9 +12,17 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.mobile.unistra.unistramobile.map.GMapV2Direction;
+import com.mobile.unistra.unistramobile.map.ItineraireTask;
+
+import org.w3c.dom.Document;
+
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -22,6 +31,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+    private GoogleMap gMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +45,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 .addOnConnectionFailedListener(this)
                 .build();
         createLocationRequest();
+
+       //gMap = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
+
+        //On récupère le départ et l'arrivée
+        final String editDepart = "Strasbourg";
+        final String editArrivee = "Saverne";
+
+        //Appel de la méthode asynchrone
+        new ItineraireTask(this, mMap, editDepart, editArrivee).execute();
+
 
     }
     protected void createLocationRequest() {
@@ -96,6 +116,20 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     public void onLocationChanged(Location where) {
        // mMap.addMarker(new MarkerOptions().position(new LatLng( where.getLongitude(),where.getLatitude())).title("ICI abruti !! "));
+      /*  md = new GMapV2Direction();
+        mMap = ((SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map)).getMap();
+        Document doc = md.getDocument(sourcePosition, destPosition,
+                GMapV2Direction.MODE_DRIVING);
+
+        ArrayList<LatLng> directionPoint = md.getDirection(doc);
+        PolylineOptions rectLine = new PolylineOptions().width(3).color(
+                Color.RED);
+
+        for (int i = 0; i < directionPoint.size(); i++) {
+            rectLine.add(directionPoint.get(i));
+        }
+        Polyline polylin = mMap.addPolyline(rectLine);*/
     }
 
 
