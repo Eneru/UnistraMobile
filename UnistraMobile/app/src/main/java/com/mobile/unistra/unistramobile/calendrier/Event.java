@@ -15,9 +15,11 @@ public class Event {
     public Event(String uid, String titreCours, String salle, String description, Date dateDebut, Date dateFin){
         this.titreCours = titreCours;
         this.salle = salle;
+        this.uid = uid;
         this.description = description;
         this.dateDebut =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
         this.dateFin = new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+
 
         this.dateDebut.setTime(dateDebut);
         this.dateFin.setTime(dateFin);
