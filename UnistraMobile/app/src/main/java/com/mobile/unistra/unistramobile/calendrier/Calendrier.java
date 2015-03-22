@@ -12,7 +12,7 @@ import java.util.TimeZone;
  */
 public class Calendrier extends Wget {
     TimeZone fuseauHoraire;
-    ArrayList<Event> listeEvents;
+    public ArrayList<Event> listeEvents;
 
     /**
      * Surcharge de concatHtml, servant à avoir un format qui m'arrange.
@@ -162,14 +162,21 @@ public class Calendrier extends Wget {
     }
 
     /**
-         * Parse un <b>String</b> pour y trouver la description.
+     * Parse un <b>String</b> pour y trouver la description.
      * @param entree String correspondant à un événement d'un VCALENDAR
      * @return String correspondant à la description
      */
     public String description(String entree){
         int debut = entree.indexOf("DESCRIPTION:")+12;
         int fin = entree.indexOf("\n",debut);
-        return entree.substring(debut,fin);
+
+        String retour = entree.substring(debut,fin);
+        //On remplace les \n inutils par des espaces
+        retour = retour.replaceAll("\n"," ");
+        //On remplace les 'faux' \n par des 'vrais'.
+        retour = retour.replaceAll("\\\\n","\n");
+
+        return retour;
     }
 
     /**
@@ -193,7 +200,8 @@ public class Calendrier extends Wget {
         for(Event event:listeEvents)
             affichage += event.titreCours + " : "
                       + event.salle + "\n\tà "
-                      + event.getDebut().getTimeInMillis() +"\n";
+                      + event.getDebut().getTimeInMillis() +"\n\tDoublon? "
+                      + event.estDoublon() +"\n";
         return affichage;
     }
 
