@@ -162,14 +162,16 @@ public class Calendrier extends Wget {
     }
 
     /**
-         * Parse un <b>String</b> pour y trouver la description.
+     * Parse un <b>String</b> pour y trouver la description.
      * @param entree String correspondant à un événement d'un VCALENDAR
      * @return String correspondant à la description
      */
     public String description(String entree){
         int debut = entree.indexOf("DESCRIPTION:")+12;
         int fin = entree.indexOf("\n",debut);
-        return entree.substring(debut,fin);
+        String retour = entree.substring(debut,fin);
+        retour = retour.replaceAll("\\\\n","\n");//Pour échapper un backslash il en faut 4 d'affilée.
+        return retour;
     }
 
     /**

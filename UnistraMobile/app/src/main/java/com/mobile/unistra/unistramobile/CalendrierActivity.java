@@ -2,6 +2,7 @@ package com.mobile.unistra.unistramobile;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,6 +16,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 
@@ -159,7 +162,7 @@ public class CalendrierActivity extends ActionBarActivity {
                 values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
                 values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
                 values.put(CalendarContract.Events.TITLE, event.getTitre());
-                values.put(CalendarContract.Events.DESCRIPTION, event.getDescription() + '\n' + event.getUid());
+                values.put(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
                 values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
                 TimeZone timeZone = event.getDebut().getTimeZone();
                 values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
@@ -212,6 +215,12 @@ public class CalendrierActivity extends ActionBarActivity {
                     exportAgenda();
                 //    exportAgendaOld();
                 result.setText(calendrier.afficherEvent());
+                Context context = getApplicationContext();
+                CharSequence text = "Evenements ajoutés à l'agenda";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
             }
 
         });

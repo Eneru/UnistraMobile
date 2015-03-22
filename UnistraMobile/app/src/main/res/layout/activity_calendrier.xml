@@ -4,27 +4,31 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.mobile.unistra.unistramobile.CalendrierActivity">
+    tools:context="com.mobile.unistra.unistramobile.CalendrierActivity"
+    android:background="#ffffff">
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Rechercher"
         android:id="@+id/button_search"
-        android:layout_below="@+id/weekEditText"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:background="#ff0e00ff"
+        android:textColor="#ffffff" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:inputType="number"
         android:text="4308"
         android:ems="10"
         android:id="@+id/ressourceEditText"
-        android:layout_marginTop="20dp"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/labelRessource" />
+        android:layout_toRightOf="@+id/labelRessource"
+        android:layout_toLeftOf="@+id/labelSemaines"
+        android:layout_toStartOf="@+id/labelSemaines" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -38,25 +42,26 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:inputType="number"
         android:text="1"
         android:ems="10"
         android:id="@+id/weekEditText"
-        android:layout_below="@+id/labelSemaines"
-        android:layout_alignLeft="@+id/ressourceEditText"
-        android:layout_alignStart="@+id/ressourceEditText" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignLeft="@+id/exportButton"
+        android:layout_alignStart="@+id/exportButton" />
 
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/scrollView"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/result_txt"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:background="#ffffffff"
+        android:background="#eeeeee"
         android:focusable="false"
-        android:layout_alignTop="@+id/result_txt">
+        android:layout_below="@+id/labelResultat"
+        android:layout_above="@+id/button_search"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -70,7 +75,7 @@
         android:layout_height="wrap_content"
         android:text="Ressource :"
         android:id="@+id/labelRessource"
-        android:layout_alignTop="@+id/ressourceEditText"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -79,16 +84,16 @@
         android:layout_height="wrap_content"
         android:text="Semaines :"
         android:id="@+id/labelSemaines"
-        android:layout_below="@+id/ressourceEditText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/weekEditText"
+        android:layout_toStartOf="@+id/weekEditText" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Résultat :"
         android:id="@+id/labelResultat"
-        android:layout_above="@+id/scrollView"
+        android:layout_below="@+id/ressourceEditText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -97,8 +102,9 @@
         android:layout_height="wrap_content"
         android:text="Exporter"
         android:id="@+id/exportButton"
-        android:layout_below="@+id/weekEditText"
-        android:layout_alignRight="@+id/scrollView"
-        android:layout_alignEnd="@+id/scrollView" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="#0E00FF"
+        android:textColor="#ffffff" />
 
 </RelativeLayout>
