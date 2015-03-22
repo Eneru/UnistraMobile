@@ -1,10 +1,7 @@
 package com.mobile.unistra.unistramobile;
 
-import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,8 +15,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 
@@ -37,10 +32,10 @@ public class CalendrierActivity extends ActionBarActivity {
     TextView txt;
     TextView result;
 
-    //ArrayList<AgendaLocal> agendaLocal;
-    ArrayList<Event> agendaLocal;
+    ArrayList<AgendaLocal> agendaLocal;
 
-    //private MyCalendar m_calendars[];
+
+    private MyCalendar m_calendars[];
     private String m_selectedCalendarId = "1"; //2 = google, chez moi.
 
     /**
@@ -74,8 +69,7 @@ public class CalendrierActivity extends ActionBarActivity {
      */
     private void getLocalEvents() {
         Uri l_eventUri;
-        //agendaLocal = new ArrayList<AgendaLocal>();
-        agendaLocal = new ArrayList<Event>();
+        agendaLocal = new ArrayList<AgendaLocal>();
 
         if (Build.VERSION.SDK_INT >= 8 ) {
             l_eventUri = Uri.parse("content://com.android.calendar/events");
@@ -93,15 +87,15 @@ public class CalendrierActivity extends ActionBarActivity {
             //StringBuilder l_displayText = new StringBuilder();
             int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
             int l_colBegin = l_managedCursor.getColumnIndex(l_projection[1]);
-            int l_colEnd = l_managedCursor.getColumnIndex(l_projection[2]);
+            int l_colEnd = l_managedCursor.getColumnIndex(l_projection[1]);
             do {
                 l_title = l_managedCursor.getString(l_colTitle);
-                l_begin = l_managedCursor.getString(l_colBegin);
-                l_end = l_managedCursor.getString(l_colEnd);
+                l_begin = getDateTimeStr(l_managedCursor.getString(l_colBegin));
+                l_end = getDateTimeStr(l_managedCursor.getString(l_colEnd));
                 //l_displayText.append(l_title + "\n" + l_begin + "\n" + l_end + "\n----------------\n");
                 ++l_cnt;
-                agendaLocal.add(new Event(l_title,l_begin,l_end));
-                //agendaLocal.add(new AgendaLocal(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
+                //agendaLocal.add(new AgendaLocal(l_title,l_begin,l_end));
+                agendaLocal.add(new AgendaLocal(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
 
             } while (l_managedCursor.moveToNext());// && l_cnt < 3);
             //result.setText(l_displayText.toString());
@@ -155,53 +149,45 @@ public class CalendrierActivity extends ActionBarActivity {
 
     /**
      * Méthode exportant la liste d'événements vers l'agenda par défaut du téléphone.
-     * Cette version ne demande pas de vérification de la part de l'utilisateur.
      */
     public void exportAgenda(){
         if(agendaLocal != null) {
             for (Event event : calendrier.listeEvents()) {
-                //Si l'évenement figure déjà dans l'agenda, on ne l'ajoute pas.
-                if(!(event.doublon)) {
-                    ContentResolver cr = getContentResolver();
-                    ContentValues values = new ContentValues();
+                ContentResolver cr = getContentResolver();
+                ContentValues values = new ContentValues();
 
-                    values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
-                    values.put(CalendarContract.Events.TITLE, event.getTitre());
-                    values.put(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
-                    values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
-                    TimeZone timeZone = event.getDebut().getTimeZone();
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+                values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
+                values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
+                values.put(CalendarContract.Events.TITLE, event.getTitre());
+                values.put(CalendarContract.Events.DESCRIPTION, event.getDescription() + '\n' + event.getUid());
+                values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
+                TimeZone timeZone = event.getDebut().getTimeZone();
+                values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
 
-                    // default calendar
-                    values.put(CalendarContract.Events.CALENDAR_ID, 1);
+                // default calendar
+                values.put(CalendarContract.Events.CALENDAR_ID, 1);
 
-                    //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
-                    //        + dtUntill);
-                    //for one hour
-                    //values.put(CalendarContract.Events.DURATION, "+P1H");
+                //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
+                //        + dtUntill);
+                //for one hour
+                //values.put(CalendarContract.Events.DURATION, "+P1H");
 
-                    //values.put(CalendarContract.Events.HAS_ALARM, 1);
+                //values.put(CalendarContract.Events.HAS_ALARM, 1);
 
-                    // insert event to calendar
-                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
-                }
+                // insert event to calendar
+                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
             }
         }
     }
 
-    /**
-     * Demande pour chaque événement d'accepter par l'utilisateur.
-     * <br>Cette méthode pourra être utilisée différemment, par exemple si l'utilisateur veut pouvoir préciser ses modifications.
-     */
-    public void exportAgendaCheck(){
+    public void exportAgendaOld(){
         for(Event event:calendrier.listeEvents()){
             Intent intent = new Intent(Intent.ACTION_INSERT);
 
             intent.setType("vnd.android.cursor.item/event");
             intent.putExtra(CalendarContract.Events.TITLE, event.getTitre());
             intent.putExtra(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
-            intent.putExtra(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
+            intent.putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription());
 
             // Setting dates
             intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
@@ -217,30 +203,19 @@ public class CalendrierActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-
-        //Actions du bouton Export
         Button btn_export = (Button) findViewById(R.id.exportButton);
         btn_export.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(calendrier!=null && !calendrier.listeEvents().isEmpty())
-                    //comparerAgendaEvent();
+                    comparerAgendaEvent();
                     exportAgenda();
-                    //exportAgendaCheck();
+                //    exportAgendaOld();
                 result.setText(calendrier.afficherEvent());
-
-                //Message de confirmation
-                Context context = getApplicationContext();
-                CharSequence text = "Événements ajoutés à l'agenda";
-                int duration = Toast.LENGTH_SHORT;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
             }
 
         });
 
-        //Actions du bouton Recherche
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -253,9 +228,13 @@ public class CalendrierActivity extends ActionBarActivity {
                 if(txtRessource.getText().toString().equalsIgnoreCase("ressource")) txtRessource.setText("4312");
                 if(txtSemaines.getText().toString().equalsIgnoreCase("semaines")) txtSemaines.setText("4");
 
-                //On va chercher les événements du calendrier local
+
                 getLocalEvents();
 
+/*                for(AgendaLocal a : agendaLocal) {
+                    result.append(a.toString());
+                }*/
+                //getCalendars();
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
                 } catch (Exception e) {
@@ -265,16 +244,10 @@ public class CalendrierActivity extends ActionBarActivity {
                 if(calendrier != null){
                     if(calendrier.estValide()) {
                         result.setText("");
-                        //On trie les doublons pour n'afficher ceux qui ne figurent pas dans l'agenda local.
-                        comparerAgendaEvent();
-                        //Puis on affiche les événements exclusifs.
-                        result.setText(calendrier.afficherEvent());
-                        /*for(Event local : agendaLocal) {
-                            result.append(local.getTitre() + "\n\t" + local.getDebut().getTimeInMillis() + "\n\t" + local.getFin().getTimeInMillis()+"\n");
-                        }
-                        for(Event local : calendrier.listeEvents()) {
-                            result.append(local.getTitre() + "\n\t" + local.getDebut().getTimeInMillis() + "\n\t" + local.getFin().getTimeInMillis()+"\n");
+                        /*for(AgendaLocal a : agendaLocal) {
+                            result.append(a.toString());
                         }*/
+                        result.setText(calendrier.afficherEvent());
                     }else{
                         result.setText("Erreur au chargement de l'ics");
                     }
@@ -306,23 +279,19 @@ public class CalendrierActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Compare et note les doublons
-     */
+
     public void comparerAgendaEvent(){
-        for(Event local : agendaLocal) {
-            for(Event nouveau : calendrier.listeEvents){
-                if ( (nouveau.getTitre().equals(local.getTitre())) &&
-                        (nouveau.getDebut().getTimeInMillis() == local.getDebut().getTimeInMillis()) &&
-                        (nouveau.getFin().getTimeInMillis() == local.getFin().getTimeInMillis()))
-                    //calendrier.listeEvents.remove(nouveau);
-                    nouveau.setDoublon(true);
+        for(AgendaLocal a : agendaLocal){
+            for(Event e : calendrier.listeEvents()){
+                if(e.getTitre().equals(a.titre) && e.getDebut().getTimeInMillis() == Long.parseLong(a.dtstart) && e.getFin().getTimeInMillis() == Long.parseLong(a.dtend)){
+                   calendrier.listeEvents().remove(e);
+                }
             }
         }
     }
 }
 
-/*class AgendaLocal{
+class AgendaLocal{
     public String titre;
     public String dtstart;
     public String dtend;
@@ -337,7 +306,7 @@ public class CalendrierActivity extends ActionBarActivity {
         return titre +'\n' + dtstart +'\n' + dtend +'\n' + "---------------"  +'\n';
     }
 }
-*//*
+
 class MyCalendar {
     public String name;
     public String id;
@@ -349,4 +318,4 @@ class MyCalendar {
     public String toString() {
         return name;
     }
-}*/
+}
