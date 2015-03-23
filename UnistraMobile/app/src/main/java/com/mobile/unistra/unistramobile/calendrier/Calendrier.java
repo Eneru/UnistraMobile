@@ -14,6 +14,11 @@ public class Calendrier extends Wget {
     TimeZone fuseauHoraire;
     ArrayList<Event> listeEvents;
 
+    /**
+     * Surcharge de concatHtml, servant à avoir un format qui m'arrange.
+     * @see com.mobile.unistra.unistramobile.annuaire.Wget#run()
+     * @param s ligne lue.
+     */
     @Override
     protected void concatHtml(String s) {
         html += s + '\n';
@@ -33,7 +38,9 @@ public class Calendrier extends Wget {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        // Le fuseau horaire permet d'adapter heure d'hiver/été
         fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
+
         this.listeEvents = listeEvents();
 
         //Le tri des informations reçues aura probablement lieu ici
@@ -59,10 +66,21 @@ public class Calendrier extends Wget {
         return entree.substring(entree.indexOf("SUMMARY:") + 8, entree.indexOf('\n', entree.indexOf("SUMMARY:") + 8));
     }
 
+    /**
+     * Renvoit le lieu qui figure dans <emph>entree</emph>.
+     * @param entree Chaîne de caractère à analyser ; si possible un seul événement à la fois.
+     * @return Le lieu, sous forme de <b>String</b>.
+     */
     public String nomLieu(String entree){
         return entree.substring(entree.indexOf("LOCATION:") + 9, entree.indexOf('\n', entree.indexOf("LOCATION:") + 9));
     }
 
+    /**
+     * Appelle les méthodes de parsage pour générer une <b>Date</b> complète, faisant figurer heure, minutes, jour, mois, année.
+     * <br>Il s'adapte au changement d'heure hiver/été.
+     * @param entree <b>String</b> correspondant à un événement d'un VCALENDAR
+     * @return Une <b>Date</b>, corresondant à la date (et heure) de fin d'un événement.
+     */
     public Date dateFin(String entree){
         int annee = anneeFin(entree);
         int mois = moisFin(entree);
@@ -100,6 +118,12 @@ public class Calendrier extends Wget {
         return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
+    /**
+     * Appelle les méthodes de parsage pour générer une <b>Date</b> complète, faisant figurer heure, minutes, jour, mois, année.
+     * <br>Il s'adapte au changement d'heure hiver/été.
+     * @param entree <b>String</b> correspondant à un événement d'un VCALENDAR
+     * @return Une <b>Date</b>, corresondant à la date (et heure) de début d'un événement.
+     */
     public Date dateDebut(String entree) {
         int annee = anneeDebut(entree);
         int mois = moisDebut(entree);
@@ -137,11 +161,41 @@ public class Calendrier extends Wget {
         return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
+    /**
+     * Parse un <b>String</b> pour y trouver la description.
+     * @param entree String correspondant à un événement d'un VCALENDAR
+     * @return String correspondant à la description
+     */
+    public String description(String entree){
+        int debut = entree.indexOf("DESCRIPTION:")+12;
+        int fin = entree.indexOf("\n",debut);
+        String retour = entree.substring(debut,fin);
+        retour = retour.replaceAll("\\\\n","\n");//Pour échapper un backslash il en faut 4 d'affilée.
+        return retour;
+    }
+
+    /**
+     * Parse un <b>String</b> pour y trouver l'UID.
+     * @param entree String correspondant à un événement d'un VCALENDAR
+     * @return String correspondant à l'UID
+     */
+    public String Uid(String entree){
+        int debut = entree.indexOf("UID:")+4;
+        int fin = entree.indexOf("\n",debut);
+        return entree.substring(debut, fin);
+    }
+
+    /**
+     * Retourne le <b>String</b> qui pourra être affiché.
+     * <br>On ajoute tous les événements.
+     * @return Chaîne de caractère représentant la liste des événements.
+     */
     public String afficherEvent(){
         String affichage="";
-        for(Event event:listeEvents){
-            affichage += event.titreCours + " : "+ event.salle + "\n\tà "+ event.getDebut().getTimeInMillis() +"\n";//event.getHeureDebut()+"h"+event.getMinuteDebut()  + " le "+ event.dateDebut.get(GregorianCalendar.DAY_OF_MONTH) +"/"+ event.dateDebut.get(GregorianCalendar.MONTH)+"/"+ event.dateDebut.get(GregorianCalendar.YEAR)+"\n";
-        }
+        for(Event event:listeEvents)
+            affichage += event.titreCours + " : "
+                      + event.salle + "\n\tà "
+                      + event.getDebut().getTimeInMillis() +"\n";
         return affichage;
     }
 
@@ -167,6 +221,10 @@ public class Calendrier extends Wget {
         return resultat;
     }
 
+    /**
+     * Crée une liste de <b>Event</b> à partir des événements donnés en format <b>String</b>.
+     * @return Une liste de <b>Event</b> non ordonnée.
+     */
     public ArrayList<Event> listeEvents(){
         ArrayList<Event> liste = new ArrayList<Event>();
         for(String entree: donnerEvents())
@@ -174,7 +232,12 @@ public class Calendrier extends Wget {
         return liste;
     }
 
+    /**
+     * Appelle le constructeur de <b>Event</b> avec comme paramètre les méthodes de parsage correspondants aux champs.
+     * @param entree <b>String</b> représentant un événement au format brut.
+     * @return Un <b>Event</b> initialisé et prêt à l'emploi.
+     */
     private Event genererEvent(String entree){
-        return new Event(nomMatiere(entree),nomLieu(entree),"",dateDebut(entree),dateFin(entree));
+        return new Event(Uid(entree), nomMatiere(entree),nomLieu(entree),description(entree),dateDebut(entree),dateFin(entree));
     }
 }
