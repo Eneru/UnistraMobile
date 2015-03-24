@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -11,10 +12,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 //import com.mobile.unistra.unistramobile.map.GMapV2Direction;
@@ -24,14 +27,14 @@ import org.w3c.dom.Document;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MapsActivity extends FragmentActivity implements  LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LocationManager locationManager;
     private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private GoogleMap gMap;
+    private MapsActivity me;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
         mMap.setMyLocationEnabled(true);
+        mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -46,17 +50,34 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 .build();
         createLocationRequest();
 
+
        //gMap = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
 
         //On récupère le départ et l'arrivée
         final String editDepart = "Strasbourg";
         final String editArrivee = "Saverne";
-
+        me = this;
         //Appel de la méthode asynchrone
-        new ItineraireTask(this, mMap, editDepart, editArrivee).execute();
+     //   new ItineraireTask(this, mMap, editDepart, editArrivee).execute();
 
 
     }
+
+    private Marker mMarker;
+    private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
+        @Override
+        public void onMyLocationChange(Location location) {
+            LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+           // mMarker = mMap.addMarker(new MarkerOptions().position(loc));
+
+            if(mMap != null){
+
+                AsyncTask<Void, Integer, Boolean> iti = new ItineraireTask(me, mMap, location.getLatitude()+","+location.getLongitude(), "Strasbourg").execute();
+              //  mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
+            }
+        }
+    };
+
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
