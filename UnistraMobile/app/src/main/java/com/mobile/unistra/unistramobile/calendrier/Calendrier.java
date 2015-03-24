@@ -1,6 +1,10 @@
 package com.mobile.unistra.unistramobile.calendrier;
 
+import android.content.Context;
+
 import com.mobile.unistra.unistramobile.annuaire.Wget;
+
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -13,6 +17,7 @@ import java.util.TimeZone;
 public class Calendrier extends Wget {
     TimeZone fuseauHoraire;
     ArrayList<Event> listeEvents;
+    String ressources;
 
     /**
      * Surcharge de concatHtml, servant à avoir un format qui m'arrange.
@@ -42,6 +47,7 @@ public class Calendrier extends Wget {
         fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
 
         this.listeEvents = listeEvents();
+        this.ressources = ressource;
 
         //Le tri des informations reçues aura probablement lieu ici
         this.interrupt();
@@ -240,4 +246,11 @@ public class Calendrier extends Wget {
     private Event genererEvent(String entree){
         return new Event(Uid(entree), nomMatiere(entree),nomLieu(entree),description(entree),dateDebut(entree),dateFin(entree));
     }
+
+    /**
+     * Renvoit la liste des ressources sous format <b>String</b>.
+     * <br>On aura donc un <b>String</b> de la forme : "4208" ou "3012,123,123"
+     * @return Une chaîne de caractère contenant des nombres, séparés par des virgules (pas d'espace)
+     */
+    public String getRessources(){return this.ressources;}
 }
