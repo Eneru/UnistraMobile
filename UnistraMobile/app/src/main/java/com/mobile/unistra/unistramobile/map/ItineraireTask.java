@@ -65,7 +65,7 @@ public class ItineraireTask extends AsyncTask<Void, Integer, Boolean> {
      */
     @Override
     protected void onPreExecute() {
-        Toast.makeText(context, TOAST_MSG, Toast.LENGTH_LONG).show();
+        /*Toast.makeText(context, TOAST_MSG, Toast.LENGTH_LONG).show();*/
     }
 
     /***
