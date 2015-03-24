@@ -187,7 +187,6 @@ public class CalendrierActivity extends ActionBarActivity {
                     toasterNotif("Événements ajoutés à l'agenda");
                 }
             }
-
         });
     }
 
@@ -268,8 +267,7 @@ public class CalendrierActivity extends ActionBarActivity {
                     data.lastIndexOf('0'),data.lastIndexOf('1')),data.lastIndexOf('2')),data.lastIndexOf('3')),data.lastIndexOf('4')),
                     data.lastIndexOf('5')),data.lastIndexOf('6')),data.lastIndexOf('7')),data.lastIndexOf('8')),data.lastIndexOf('9'));
             data = data.substring(0,lastInt+1);
-            toasterNotif("Préférences chargées : " + data + " de longueur " + data.length());
-
+            toasterNotif("Préférences chargées");
         }
         catch (Exception e) {
             Log.e("chargerRessources","Les ressources n'ont pas pu être chargées");
@@ -277,6 +275,10 @@ public class CalendrierActivity extends ActionBarActivity {
         return data;
     }
 
+    /**
+     * Affiche un toast : le message sur fond noir en bas, qui disparaît au bout de quelques secondes.
+     * @param text Texte à afficher en toast
+     */
     private void toasterNotif(CharSequence text){
         Context context = getApplicationContext();
         int duration = Toast.LENGTH_SHORT;
@@ -285,6 +287,10 @@ public class CalendrierActivity extends ActionBarActivity {
     }
 }
 
+/**
+ * Classe servant à stocker les événements de l'agenda local du téléphone.
+ * <br>On pourra vérifier si les éléments ajoutés n'existent pas déjà ou n'existent plus.
+ */
 class AgendaLocal{
     public String titre;
     public String dtstart;
