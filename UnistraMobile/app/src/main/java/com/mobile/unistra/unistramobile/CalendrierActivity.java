@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,11 +40,9 @@ public class CalendrierActivity extends ActionBarActivity {
     Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
-    TextView txt;
     TextView result;
 
     ArrayList<AgendaLocal> agendaLocal;
-
 
     private MyCalendar m_calendars[];
     private String m_selectedCalendarId = "1"; //2 = google, chez moi.
@@ -143,11 +142,37 @@ public class CalendrierActivity extends ActionBarActivity {
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
         txtSemaines= (EditText) findViewById(R.id.weekEditText);
-        txt = (TextView) findViewById(R.id.result_txt);
         result = (TextView) findViewById(R.id.reslutTextView);
 
+        // Chargement des ressources
         String ressources = chargerRessources(this);
         if(!ressources.equals(""))txtRessource.setText(ressources);
+
+        // Actions du bouton Recherche
+        Button btn_search = (Button) findViewById(R.id.button_search);
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getLocalEvents();
+
+                try {
+                    calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
+                    sauvegarderRessources(getBaseContext(), calendrier.getRessources());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if(calendrier != null){
+                    if(calendrier.estValide()) {
+                        result.setText("");
+                        result.setText(calendrier.afficherEvent());
+                    }else{
+                        result.setText("Erreur au chargement de l'ics");
+                    }
+                }else result.setText("Echec au chargement du calendrier en ligne");
+            }
+        });
+
 
         // Actions du bouton Exporter
         Button btn_export = (Button) findViewById(R.id.exportButton);
@@ -163,31 +188,6 @@ public class CalendrierActivity extends ActionBarActivity {
                 }
             }
 
-        });
-
-        // Actions du bouton Recherche
-        Button btn_search = (Button) findViewById(R.id.button_search);
-        btn_search.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getLocalEvents();
-
-                try {
-                    calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
-                    sauvegarderRessources();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                if(calendrier != null){
-                    if(calendrier.estValide()) {
-                        result.setText("");
-                        result.setText(calendrier.afficherEvent());
-                    }else{
-                        result.setText("Erreur au chargement de l'ics");
-                    }
-                }else txt.setText("Echec au chargement du calendrier en ligne");
-            }
         });
     }
 
@@ -223,16 +223,27 @@ public class CalendrierActivity extends ActionBarActivity {
     /**
      * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
      */
-    public void sauvegarderRessources(){
-        if(calendrier != null && calendrier.getRessources() != null) {
+    public void sauvegarderRessources(Context context, String data){
+        FileOutputStream fOut = null;
+        OutputStreamWriter osw = null;
+
+        try{
+            fOut = context.openFileOutput("ressources.csv",MODE_PRIVATE);//MODE_APPEND);
+            osw = new OutputStreamWriter(fOut);
+            osw.write(data);
+            osw.flush();
+            //popup surgissant pour le résultat
+            Toast.makeText(context, "Ressource sauvegardée",Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e) {
+            Toast.makeText(context, "Ressource non sauvegardée",Toast.LENGTH_SHORT).show();
+        }
+        finally {
             try {
-                FileOutputStream fos = openFileOutput("ressources.csv", Context.MODE_PRIVATE);
-                fos.write(calendrier.getRessources().getBytes());
-                fos.close();
-                Log.w("sauvegarderRessources","Réussite de la sauvegarde : "+calendrier.getRessources());
-            } catch (Exception e) {
-                //Fichier non trouvé
-                Log.e("sauvegarderRessources","Erreur à la sauvegarde");
+                osw.close();
+                fOut.close();
+            } catch (IOException e) {
+                Toast.makeText(context, "Ressource non sauvegardée",Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -253,9 +264,11 @@ public class CalendrierActivity extends ActionBarActivity {
             isr = new InputStreamReader(fIn);
             isr.read(inputBuffer);
             data = new String(inputBuffer);
-            //affiche le contenu de mon fichier dans un popup surgissant
-            //Toast.makeText(context, " "+data,Toast.LENGTH_SHORT).show();
-            toasterNotif("Préférences chargées");
+            int lastInt = Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(
+                    data.lastIndexOf('0'),data.lastIndexOf('1')),data.lastIndexOf('2')),data.lastIndexOf('3')),data.lastIndexOf('4')),
+                    data.lastIndexOf('5')),data.lastIndexOf('6')),data.lastIndexOf('7')),data.lastIndexOf('8')),data.lastIndexOf('9'));
+            data = data.substring(0,lastInt+1);
+            toasterNotif("Préférences chargées : " + data + " de longueur " + data.length());
 
         }
         catch (Exception e) {
