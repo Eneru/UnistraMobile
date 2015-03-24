@@ -22,8 +22,12 @@ import android.widget.Toast;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -142,7 +146,7 @@ public class CalendrierActivity extends ActionBarActivity {
         txt = (TextView) findViewById(R.id.result_txt);
         result = (TextView) findViewById(R.id.reslutTextView);
 
-        String ressources = chargerRessources();
+        String ressources = chargerRessources(this);
         if(!ressources.equals(""))txtRessource.setText(ressources);
 
         // Actions du bouton Exporter
@@ -235,19 +239,29 @@ public class CalendrierActivity extends ActionBarActivity {
 
     /**
      * Charge les ressources du fichier sur le téléphone.
+     * @return Un <b>String</b> contenant les ressources  enregistrées.
      */
-    public String chargerRessources(){
-        String string = "";
+    public String chargerRessources(Context context){
+        FileInputStream fIn = null;
+        InputStreamReader isr = null;
+
+        char[] inputBuffer = new char[255];
+        String data = null;
+
         try{
-            FileInputStream fis = openFileInput("ressources.csv");
-            fis.read(string.getBytes());
-            fis.close();
-            Log.i("chargerRessources","Réussite du chargement : "+string);
-        }catch (Exception e){
-            //Fichier inexistant
-            Log.e("chargerRessources","Erreur de chargement");
+            fIn = context.openFileInput("ressources.csv");
+            isr = new InputStreamReader(fIn);
+            isr.read(inputBuffer);
+            data = new String(inputBuffer);
+            //affiche le contenu de mon fichier dans un popup surgissant
+            //Toast.makeText(context, " "+data,Toast.LENGTH_SHORT).show();
+            toasterNotif("Préférences chargées");
+
         }
-        return string;
+        catch (Exception e) {
+            Log.e("chargerRessources","Les ressources n'ont pas pu être chargées");
+        }
+        return data;
     }
 
     private void toasterNotif(CharSequence text){
