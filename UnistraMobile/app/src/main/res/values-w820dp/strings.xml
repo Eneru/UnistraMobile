@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_cancel_str">Annuler</string>
+    <string name="button_sendto_str">Envoyer</string>
+</resources>
