@@ -422,7 +422,23 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
 
         // Chargement du calendrier local
         getLocalEvents();
+
+        caldroidFragment = new CaldroidFragment();
+        Bundle args = new Bundle();
+        Calendar cal = Calendar.getInstance();
+        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
+        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY); // Tuesday
+        caldroidFragment.setArguments(args);
+
+        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+        t.replace(R.id.calendar1, caldroidFragment);
+        t.commit();
+
+        //caldroidFragment.clearSelectedDates();
         colorCalendrierLocal();
+        if(calendrier != null)
+            colorCalendrier();
     }
 
     @Override
