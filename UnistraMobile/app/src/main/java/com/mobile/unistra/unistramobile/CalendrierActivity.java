@@ -47,14 +47,12 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
     Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
-    //TextView result;
-
 
     public ArrayList<Event> agendaLocal;
 
     private MyCalendar m_calendars[];
     private String calendriers[];
-    private String selectedCalendarId = "1"; //2 = google, chez moi.
+    private String selectedCalendarId = "1";
 
     /**
      * Méthode permettant de récupérer tous les événements sur l'agenda du téléphone.
@@ -69,14 +67,12 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
             l_eventUri = Uri.parse("content://calendar/events");
         }
         String[] l_projection = new String[]{"title", "dtstart", "dtend"};
-        Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, "calendar_id=" + selectedCalendarId, null, "dtstart ASC, dtend ASC");//"dtstart DESC, dtend DESC");
-        //Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, null, null, null);
+        Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, "calendar_id=" + selectedCalendarId, null, "dtstart ASC, dtend ASC");
         if (l_managedCursor.moveToFirst()){//.moveToFirst()) {
             int l_cnt = 0;
             String l_title;
             String l_begin;
             String l_end;
-            //StringBuilder l_displayText = new StringBuilder();
             int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
             int l_colBegin = l_managedCursor.getColumnIndex(l_projection[1]);
             int l_colEnd = l_managedCursor.getColumnIndex(l_projection[1]);
@@ -84,13 +80,10 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
                 l_title = l_managedCursor.getString(l_colTitle);
                 l_begin = getDateTimeStr(l_managedCursor.getString(l_colBegin));
                 l_end = getDateTimeStr(l_managedCursor.getString(l_colEnd));
-                //l_displayText.append(l_title + "\n" + l_begin + "\n" + l_end + "\n----------------\n");
                 ++l_cnt;
-                //agendaLocal.add(new AgendaLocal(l_title,l_begin,l_end));
                 agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
 
-            } while (l_managedCursor.moveToNext());// && l_cnt < 3);
-            //result.setText(l_displayText.toString());
+            } while (l_managedCursor.moveToNext());
         }
     }
 
@@ -159,12 +152,10 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         spinner.setOnItemSelectedListener(this);
 
         selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
-        toasterNotif(String.valueOf(spinner.getSelectedItemId()) + 1);
 
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
         txtSemaines= (EditText) findViewById(R.id.weekEditText);
-        //result = (TextView) findViewById(R.id.reslutTextView);
 
         // Initialisation du widget Caldroid
         caldroidFragment = new CaldroidFragment();
@@ -172,7 +163,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         Calendar cal = Calendar.getInstance();
         args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
         args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
-        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY); // Tuesday
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
         caldroidFragment.setArguments(args);
 
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
@@ -203,12 +194,8 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
 
                 if(calendrier != null){
                     comparerAgendaEvent();
-                    //result.setText("");
-                    //result.setText(calendrier.afficherEvent());
-                    //for(Event e : agendaLocal)
-                    //    result.append(e.toString());
                     colorCalendrier();
-                }//else result.setText("Echec au chargement du calendrier en ligne");
+                }
             }
         });
 
@@ -248,15 +235,6 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
      * Compare les événements de l'agenda local avec les événements chargés par l'ADE.
      */
     public void comparerAgendaEvent(){
-        /*for(Event local : agendaLocal){
-            for(Event recu : calendrier.listeEvents){
-                if(recu.equals(local)){
-                    recu.setDoublon(true);
-                    local.setDoublon(true);
-                   //calendrier.remove(recu); //il faudra probablement faire autrement
-                }
-            }
-        }*/
         if(agendaLocal != null && calendrier != null)
             calendrier.filtrerDoublons(agendaLocal);
     }
@@ -413,10 +391,6 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
      * @param id
      */
     public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-        Toast.makeText(parent.getContext(),
-                "OnItemSelectedListener : " + parent.getItemAtPosition(pos).toString(),
-                Toast.LENGTH_SHORT).show();
-
         selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
 
         // Chargement du calendrier local
@@ -427,7 +401,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         Calendar cal = Calendar.getInstance();
         args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
         args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
-        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY); // Tuesday
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
         caldroidFragment.setArguments(args);
 
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
