@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
+import com.roomorama.caldroid.CaldroidFragment;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -37,6 +39,7 @@ import java.util.TimeZone;
 
 
 public class CalendrierActivity extends ActionBarActivity {
+    CaldroidFragment caldroidFragment;
     Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
@@ -144,6 +147,19 @@ public class CalendrierActivity extends ActionBarActivity {
         txtSemaines= (EditText) findViewById(R.id.weekEditText);
         result = (TextView) findViewById(R.id.reslutTextView);
 
+        // Initialisation du widget Caldroid
+        caldroidFragment = new CaldroidFragment();
+        Bundle args = new Bundle();
+        Calendar cal = Calendar.getInstance();
+        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
+        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY); // Tuesday
+        caldroidFragment.setArguments(args);
+
+        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+        t.replace(R.id.calendar1, caldroidFragment);
+        t.commit();
+
         // Chargement des ressources
         String ressources = chargerRessources(this);
         if(!ressources.equals(""))txtRessource.setText(ressources);
@@ -154,7 +170,6 @@ public class CalendrierActivity extends ActionBarActivity {
             @Override
             public void onClick(View view) {
                 getLocalEvents();
-
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
@@ -166,6 +181,7 @@ public class CalendrierActivity extends ActionBarActivity {
                     if(calendrier.estValide()) {
                         result.setText("");
                         result.setText(calendrier.afficherEvent());
+                        colorCalendrier();
                     }else{
                         result.setText("Erreur au chargement de l'ics");
                     }
@@ -284,6 +300,16 @@ public class CalendrierActivity extends ActionBarActivity {
         int duration = Toast.LENGTH_SHORT;
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
+    }
+
+    /**
+     * Colore les événements trouvés
+     */
+    private void colorCalendrier(){
+        for(Event e:calendrier.listeEvents()){
+            caldroidFragment.setBackgroundResourceForDate(R.color.fuchsia,new Date(e.getDebut().getTimeInMillis()));
+            caldroidFragment.refreshView();
+        }
     }
 }
 

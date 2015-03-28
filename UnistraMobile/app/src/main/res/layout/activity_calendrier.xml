@@ -107,4 +107,12 @@
         android:background="#0E00FF"
         android:textColor="#ffffff" />
 
+    <fragment
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:name="com.roomorama.caldroid.DateGridFragment"
+        android:id="@+id/calendar1"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
