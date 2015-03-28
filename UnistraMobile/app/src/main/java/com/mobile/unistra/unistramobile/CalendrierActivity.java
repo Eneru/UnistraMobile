@@ -50,7 +50,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
     //TextView result;
 
 
-    ArrayList<Event> agendaLocal;
+    public ArrayList<Event> agendaLocal;
 
     private MyCalendar m_calendars[];
     private String calendriers[];
@@ -257,7 +257,8 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
                 }
             }
         }*/
-        calendrier.filtrerDoublons(agendaLocal);
+        if(agendaLocal != null && calendrier != null)
+            calendrier.filtrerDoublons(agendaLocal);
     }
 
     /**
@@ -377,7 +378,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         }
     }
 
-    public MyCalendar [] getCalendar(Context c) {
+    public void getCalendar(Context c) {
         String projection[] = {"_id", "calendar_displayName"};
         Uri calendars;
         calendars = Uri.parse("content://com.android.calendar/calendars");
@@ -402,8 +403,6 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
             } while(managedCursor.moveToNext());
             managedCursor.close();
         }
-        return m_calendars;
-
     }
 
     /**
@@ -435,10 +434,14 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
 
-        //caldroidFragment.clearSelectedDates();
+        caldroidFragment.clearSelectedDates();
         colorCalendrierLocal();
-        if(calendrier != null)
+
+        if(calendrier != null) {
+            calendrier.refresh();
+            comparerAgendaEvent();
             colorCalendrier();
+        }
     }
 
     @Override

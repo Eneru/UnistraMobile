@@ -53,6 +53,10 @@ public class Calendrier extends Wget {
         this.interrupt();
     }
 
+    public void refresh(){
+        listeEvents = listeEvents();
+    }
+
     /**
      * Permet de vérifier si le fichier téléchargé ressemble bien à un fichier <emph>.ics</emph>.
      * @return <b>true</b>, si le fichier commence bien par <emph>BEGIN:VCALENDAR</emph> et termine par <emph>END:VCALENDAR</emph>.
@@ -270,7 +274,6 @@ public class Calendrier extends Wget {
                 if(!recu.estDoublon() && recu.equals(local)){
                     recu.setDoublon(true);
                     local.setDoublon(true);
-                    //this.remove(recu); //il faudra probablement faire autrement
                 }
             }
         }
