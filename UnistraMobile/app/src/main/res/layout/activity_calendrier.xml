@@ -51,7 +51,27 @@
         android:layout_alignLeft="@+id/exportButton"
         android:layout_alignStart="@+id/exportButton" />
 
-    <ScrollView
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ressource :"
+        android:id="@+id/labelRessource"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Semaines :"
+        android:id="@+id/labelSemaines"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/weekEditText"
+        android:layout_toStartOf="@+id/weekEditText" />
+
+    <!--ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/scrollView"
@@ -73,29 +93,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ressource :"
-        android:id="@+id/labelRessource"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Semaines :"
-        android:id="@+id/labelSemaines"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/weekEditText"
-        android:layout_toStartOf="@+id/weekEditText" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Résultat :"
         android:id="@+id/labelResultat"
-        android:layout_below="@+id/ressourceEditText"
+        android:layout_below="@+id/calendar1"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true" /-->
 
     <Button
         android:layout_width="wrap_content"
@@ -112,7 +114,24 @@
         android:layout_height="wrap_content"
         android:name="com.roomorama.caldroid.DateGridFragment"
         android:id="@+id/calendar1"
-        android:layout_centerVertical="true"
+        android:layout_below="@+id/spinner"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/labelCalendrier"
+        android:text="Calendrier :"
+        android:layout_below="@+id/ressourceEditText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_below="@+id/ressourceEditText"
+        android:layout_toRightOf="@+id/labelCalendrier"
+        android:spinnerMode="dropdown" />
 
 </RelativeLayout>

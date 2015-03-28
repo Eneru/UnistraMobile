@@ -16,7 +16,7 @@ import java.util.TimeZone;
  */
 public class Calendrier extends Wget {
     TimeZone fuseauHoraire;
-    ArrayList<Event> listeEvents;
+    public ArrayList<Event> listeEvents;
     String ressources;
 
     /**
@@ -200,7 +200,7 @@ public class Calendrier extends Wget {
         String affichage="";
         for(Event event:listeEvents)
             affichage += event.titreCours + " : "
-                      + event.salle + "\n\tà "
+                      + event.salle + (event.doublon?"EST UN DOUBLON":"isok") + "\n\tà "
                       + event.getDebut().getTimeInMillis() +"\n";
         return affichage;
     }
@@ -229,13 +229,23 @@ public class Calendrier extends Wget {
 
     /**
      * Crée une liste de <b>Event</b> à partir des événements donnés en format <b>String</b>.
+     * <b>Ne doit être utilisée qu'au tout début du programme ! Ce n'est pas un "get"</b>
      * @return Une liste de <b>Event</b> non ordonnée.
      */
-    public ArrayList<Event> listeEvents(){
+    private ArrayList<Event> listeEvents(){
         ArrayList<Event> liste = new ArrayList<Event>();
         for(String entree: donnerEvents())
             liste.add(genererEvent(entree));
         return liste;
+    }
+
+    /**
+     * Supprime un événement de la liste d'événements.
+     * @param aSupprimer élément à supprimer
+     */
+    public void remove(Event aSupprimer){
+        if(this.listeEvents.contains(aSupprimer))
+            this.listeEvents.remove(aSupprimer);
     }
 
     /**
@@ -253,4 +263,16 @@ public class Calendrier extends Wget {
      * @return Une chaîne de caractère contenant des nombres, séparés par des virgules (pas d'espace)
      */
     public String getRessources(){return this.ressources;}
+
+    public void filtrerDoublons(ArrayList<Event> agendaLocal){
+        for(Event local : agendaLocal){
+            for(Event recu : this.listeEvents){
+                if(!recu.estDoublon() && recu.equals(local)){
+                    recu.setDoublon(true);
+                    local.setDoublon(true);
+                    //this.remove(recu); //il faudra probablement faire autrement
+                }
+            }
+        }
+    }
 }

@@ -15,8 +15,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.*;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,25 +41,27 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-
-public class CalendrierActivity extends ActionBarActivity {
+public class CalendrierActivity extends ActionBarActivity implements OnItemSelectedListener {
     CaldroidFragment caldroidFragment;
+    Spinner spinner;
     Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
-    TextView result;
+    //TextView result;
 
-    ArrayList<AgendaLocal> agendaLocal;
+
+    ArrayList<Event> agendaLocal;
 
     private MyCalendar m_calendars[];
-    private String m_selectedCalendarId = "1"; //2 = google, chez moi.
+    private String calendriers[];
+    private String selectedCalendarId = "1"; //2 = google, chez moi.
 
     /**
      * Méthode permettant de récupérer tous les événements sur l'agenda du téléphone.
      */
     private void getLocalEvents() {
         Uri l_eventUri;
-        agendaLocal = new ArrayList<AgendaLocal>();
+        agendaLocal = new ArrayList<Event>();
 
         if (Build.VERSION.SDK_INT >= 8 ) {
             l_eventUri = Uri.parse("content://com.android.calendar/events");
@@ -63,7 +69,7 @@ public class CalendrierActivity extends ActionBarActivity {
             l_eventUri = Uri.parse("content://calendar/events");
         }
         String[] l_projection = new String[]{"title", "dtstart", "dtend"};
-        Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, "calendar_id=" + m_selectedCalendarId, null, "dtstart ASC, dtend ASC");//"dtstart DESC, dtend DESC");
+        Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, "calendar_id=" + selectedCalendarId, null, "dtstart ASC, dtend ASC");//"dtstart DESC, dtend DESC");
         //Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, null, null, null);
         if (l_managedCursor.moveToFirst()){//.moveToFirst()) {
             int l_cnt = 0;
@@ -81,7 +87,7 @@ public class CalendrierActivity extends ActionBarActivity {
                 //l_displayText.append(l_title + "\n" + l_begin + "\n" + l_end + "\n----------------\n");
                 ++l_cnt;
                 //agendaLocal.add(new AgendaLocal(l_title,l_begin,l_end));
-                agendaLocal.add(new AgendaLocal(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
+                agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
 
             } while (l_managedCursor.moveToNext());// && l_cnt < 3);
             //result.setText(l_displayText.toString());
@@ -99,28 +105,29 @@ public class CalendrierActivity extends ActionBarActivity {
      * Méthode exportant la liste d'événements vers l'agenda par défaut du téléphone.
      */
     public void exportAgenda(){
-        if(agendaLocal != null) {
-            for (Event event : calendrier.listeEvents()) {
-                ContentResolver cr = getContentResolver();
-                ContentValues values = new ContentValues();
+        if(agendaLocal != null && calendrier != null && calendrier.listeEvents != null) {
+            for (Event event : calendrier.listeEvents) {
+                if(!event.estDoublon()) {
+                    ContentResolver cr = getContentResolver();
+                    ContentValues values = new ContentValues();
 
-                values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
-                values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
-                values.put(CalendarContract.Events.TITLE, event.getTitre());
-                values.put(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
-                values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
-                TimeZone timeZone = event.getDebut().getTimeZone();
-                values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+                    values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
+                    values.put(CalendarContract.Events.TITLE, event.getTitre());
+                    values.put(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
+                    values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
+                    TimeZone timeZone = event.getDebut().getTimeZone();
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
 
-                // default calendar
-                values.put(CalendarContract.Events.CALENDAR_ID, 1);
+                    // default calendar
+                    values.put(CalendarContract.Events.CALENDAR_ID, selectedCalendarId);
 
-                //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
-                //        + dtUntill);
-                //for one hour
-                //values.put(CalendarContract.Events.DURATION, "+P1H");
+                    //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
+                    //        + dtUntill);
+                    //for one hour
+                    //values.put(CalendarContract.Events.DURATION, "+P1H");
 
-                //values.put(CalendarContract.Events.HAS_ALARM, 1);
+                    //values.put(CalendarContract.Events.HAS_ALARM, 1);
 
                 /*if (hasAlert == true) {
                     long eventId = Long.parseLong(uri.getLastPathSegment());
@@ -131,8 +138,9 @@ public class CalendrierActivity extends ActionBarActivity {
                     contentResolver.insert(Uri.parse(reminderProviderName), calendarEventContentValues);
                 }*/
 
-                // insert event to calendar
-                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                    // insert event to calendar
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                }
             }
         }
     }
@@ -142,10 +150,21 @@ public class CalendrierActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
+        getCalendar(this);
+
+        spinner = (Spinner) findViewById(R.id.spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                R.layout.support_simple_spinner_dropdown_item, calendriers);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
+        selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
+        toasterNotif(String.valueOf(spinner.getSelectedItemId()) + 1);
+
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
         txtSemaines= (EditText) findViewById(R.id.weekEditText);
-        result = (TextView) findViewById(R.id.reslutTextView);
+        //result = (TextView) findViewById(R.id.reslutTextView);
 
         // Initialisation du widget Caldroid
         caldroidFragment = new CaldroidFragment();
@@ -160,6 +179,12 @@ public class CalendrierActivity extends ActionBarActivity {
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
 
+        // Chargement du calendrier local
+        getLocalEvents();
+
+        // Affichage du calendrier local
+        colorCalendrierLocal();
+
         // Chargement des ressources
         String ressources = chargerRessources(this);
         if(!ressources.equals(""))txtRessource.setText(ressources);
@@ -169,7 +194,6 @@ public class CalendrierActivity extends ActionBarActivity {
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getLocalEvents();
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
@@ -178,14 +202,13 @@ public class CalendrierActivity extends ActionBarActivity {
                 }
 
                 if(calendrier != null){
-                    if(calendrier.estValide()) {
-                        result.setText("");
-                        result.setText(calendrier.afficherEvent());
-                        colorCalendrier();
-                    }else{
-                        result.setText("Erreur au chargement de l'ics");
-                    }
-                }else result.setText("Echec au chargement du calendrier en ligne");
+                    comparerAgendaEvent();
+                    //result.setText("");
+                    //result.setText(calendrier.afficherEvent());
+                    //for(Event e : agendaLocal)
+                    //    result.append(e.toString());
+                    colorCalendrier();
+                }//else result.setText("Echec au chargement du calendrier en ligne");
             }
         });
 
@@ -195,12 +218,11 @@ public class CalendrierActivity extends ActionBarActivity {
         btn_export.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(calendrier!=null && !calendrier.listeEvents().isEmpty()) {
-                    comparerAgendaEvent();
+                if(calendrier!=null && !calendrier.listeEvents.isEmpty()) {
                     exportAgenda();
-                    result.setText(calendrier.afficherEvent());
-
                     toasterNotif("Événements ajoutés à l'agenda");
+                    comparerAgendaEvent();
+                    colorCalendrier();
                 }
             }
         });
@@ -226,13 +248,16 @@ public class CalendrierActivity extends ActionBarActivity {
      * Compare les événements de l'agenda local avec les événements chargés par l'ADE.
      */
     public void comparerAgendaEvent(){
-        for(AgendaLocal a : agendaLocal){
-            for(Event e : calendrier.listeEvents()){
-                if(e.getTitre().equals(a.titre) && e.getDebut().getTimeInMillis() == Long.parseLong(a.dtstart) && e.getFin().getTimeInMillis() == Long.parseLong(a.dtend)){
-                   calendrier.listeEvents().remove(e); //il faudra probablement faire autrement
+        /*for(Event local : agendaLocal){
+            for(Event recu : calendrier.listeEvents){
+                if(recu.equals(local)){
+                    recu.setDoublon(true);
+                    local.setDoublon(true);
+                   //calendrier.remove(recu); //il faudra probablement faire autrement
                 }
             }
-        }
+        }*/
+        calendrier.filtrerDoublons(agendaLocal);
     }
 
     /**
@@ -306,30 +331,103 @@ public class CalendrierActivity extends ActionBarActivity {
      * Colore les événements trouvés
      */
     private void colorCalendrier(){
-        for(Event e:calendrier.listeEvents()){
-            caldroidFragment.setBackgroundResourceForDate(R.color.fuchsia,new Date(e.getDebut().getTimeInMillis()));
+        for(Event e:calendrier.listeEvents){
+            if(e.doublon)
+                caldroidFragment.setBackgroundResourceForDate(R.color.fuchsia,new Date(e.getDebut().getTimeInMillis()));
+            else
+                caldroidFragment.setBackgroundResourceForDate(R.color.red,new Date(e.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
     }
-}
 
-/**
- * Classe servant à stocker les événements de l'agenda local du téléphone.
- * <br>On pourra vérifier si les éléments ajoutés n'existent pas déjà ou n'existent plus.
- */
-class AgendaLocal{
-    public String titre;
-    public String dtstart;
-    public String dtend;
+    /**
+     * Colore les événements trouvés sur l'agenda local
+     */
+    private void colorCalendrierLocal(){
+        int couleur = R.color.caldroid_gray;
+        switch(Integer.parseInt(selectedCalendarId)-1){
+            case 0 :
+                couleur = R.color.caldroid_lighter_gray;
+                break;
+            case 1 :
+                couleur = R.color.caldroid_gray;
+                break;
+            case 2 :
+                couleur = R.color.caldroid_darker_gray;
+                break;
+            case 3 :
+                couleur = R.color.caldroid_sky_blue;
+                break;
+            case 4 :
+                couleur = R.color.caldroid_holo_blue_light;
+                break;
+            case 5 :
+                couleur = R.color.caldroid_holo_blue_dark;
+                break;
+            case 6 :
+                couleur = R.color.blue;
+                break;
+            default :
+                couleur = R.color.black;
+        }
 
-    public AgendaLocal(String titre, String dtstart, String dtend){
-        this.titre = titre;
-        this.dtstart = dtstart;
-        this.dtend = dtend;
+        for(Event event:agendaLocal){
+            caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
+            caldroidFragment.refreshView();
+        }
     }
 
-    public String toString(){
-        return titre +'\n' + dtstart +'\n' + dtend +'\n' + "---------------"  +'\n';
+    public MyCalendar [] getCalendar(Context c) {
+        String projection[] = {"_id", "calendar_displayName"};
+        Uri calendars;
+        calendars = Uri.parse("content://com.android.calendar/calendars");
+
+        ContentResolver contentResolver = c.getContentResolver();
+        Cursor managedCursor = contentResolver.query(calendars, projection, null, null, null);
+
+        if (managedCursor.moveToFirst()){
+            m_calendars = new MyCalendar[managedCursor.getCount()];
+            calendriers = new String[managedCursor.getCount()]; //AJOUT RECENT
+            String calName;
+            String calID;
+            int cont= 0;
+            int nameCol = managedCursor.getColumnIndex(projection[1]);
+            int idCol = managedCursor.getColumnIndex(projection[0]);
+            do {
+                calName = managedCursor.getString(nameCol);
+                calID = managedCursor.getString(idCol);
+                m_calendars[cont] = new MyCalendar(calName, calID);
+                calendriers[cont] = new String(calName);
+                cont++;
+            } while(managedCursor.moveToNext());
+            managedCursor.close();
+        }
+        return m_calendars;
+
+    }
+
+    /**
+     * Ce qu'il se passe quand on appuie sur un élément de la liste déroulante
+     * @param parent
+     * @param view
+     * @param pos
+     * @param id
+     */
+    public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+        Toast.makeText(parent.getContext(),
+                "OnItemSelectedListener : " + parent.getItemAtPosition(pos).toString(),
+                Toast.LENGTH_SHORT).show();
+
+        selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
+
+        // Chargement du calendrier local
+        getLocalEvents();
+        colorCalendrierLocal();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> arg0) {
+        // TODO Auto-generated method stub
     }
 }
 

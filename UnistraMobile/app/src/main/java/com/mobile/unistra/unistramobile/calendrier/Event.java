@@ -11,6 +11,11 @@ public class Event {
     String titreCours;
     String salle;
     String description;
+    public boolean doublon;
+
+    public Event(String titreCours, String dateDebut, String dateFin){
+        this("",titreCours, "","",new Date(Long.parseLong(dateDebut)), new Date(Long.parseLong(dateFin)));
+    }
 
     public Event(String uid, String titreCours, String salle, String description, Date dateDebut, Date dateFin){
         this.titreCours = titreCours;
@@ -23,6 +28,8 @@ public class Event {
 
         this.dateDebut.setTime(dateDebut);
         this.dateFin.setTime(dateFin);
+
+        this.doublon = false;
     }
 
     public GregorianCalendar getDebut(){return dateDebut;}
@@ -38,4 +45,24 @@ public class Event {
 
     public int getHeureFin(){return dateFin.get(GregorianCalendar.HOUR_OF_DAY);}
     public int getMinuteFin(){return dateFin.get(GregorianCalendar.MINUTE);}
+
+    public boolean estDoublon(){
+        return doublon;
+    }
+
+    public void setDoublon(boolean etat){this.doublon = etat;}
+
+    public boolean equals(Event aTester){
+        if((this.titreCours.equals(aTester.titreCours)) &&
+                (this.getDebut().equals(aTester.getDebut())))// &&
+                //(this.getFin().equals(aTester.getFin())))
+            return true;
+        else return false;
+    }
+    public String toString(){
+        return this.titreCours + " : "
+                + (this.doublon?"EST UN DOUBLON":"isok")
+                +"\n\tà "
+                + this.getDebut().getTimeInMillis() +"\n";
+    }
 }
