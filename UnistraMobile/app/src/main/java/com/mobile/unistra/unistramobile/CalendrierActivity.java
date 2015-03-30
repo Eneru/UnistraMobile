@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.widget.Toast;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 import com.roomorama.caldroid.CaldroidFragment;
+import com.roomorama.caldroid.CaldroidListener;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -41,8 +43,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class CalendrierActivity extends ActionBarActivity implements OnItemSelectedListener {
+public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener {
     CaldroidFragment caldroidFragment;
+    CaldroidListener listener;
     Spinner spinner;
     Calendrier calendrier;
     EditText txtRessource;
@@ -50,9 +53,9 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
 
     public ArrayList<Event> agendaLocal;
 
-    private MyCalendar m_calendars[];
-    private String calendriers[];
-    private String selectedCalendarId = "1";
+    //private MyCalendar m_calendars[];
+    String calendriers[];
+    String selectedCalendarId = "1";
 
     /**
      * Méthode permettant de récupérer tous les événements sur l'agenda du téléphone.
@@ -170,6 +173,29 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
 
+
+        // Setup listener
+        final SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
+        listener = new CaldroidListener() {
+            @Override
+            public void onSelectDate(Date date, View view) {
+                toasterNotif("Clic sur la date");
+                // On affichera la liste des cours sur la date donnée
+            }
+            @Override
+            public void onChangeMonth(int month, int year) {
+            }
+            @Override
+            public void onLongClickDate(Date date, View view) {
+                toasterNotif("Clic long");
+                // On proposera de supprimer la date donnée ?
+            }
+            @Override
+            public void onCaldroidViewCreated() {
+            }
+        };
+        caldroidFragment.setCaldroidListener(listener);
+
         // Chargement du calendrier local
         getLocalEvents();
 
@@ -214,7 +240,6 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
             }
         });
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -365,7 +390,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         Cursor managedCursor = contentResolver.query(calendars, projection, null, null, null);
 
         if (managedCursor.moveToFirst()){
-            m_calendars = new MyCalendar[managedCursor.getCount()];
+            //m_calendars = new MyCalendar[managedCursor.getCount()];
             calendriers = new String[managedCursor.getCount()]; //AJOUT RECENT
             String calName;
             String calID;
@@ -375,7 +400,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
             do {
                 calName = managedCursor.getString(nameCol);
                 calID = managedCursor.getString(idCol);
-                m_calendars[cont] = new MyCalendar(calName, calID);
+                //m_calendars[cont] = new MyCalendar(calName, calID);
                 calendriers[cont] = new String(calName);
                 cont++;
             } while(managedCursor.moveToNext());
@@ -408,6 +433,8 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
 
+        caldroidFragment.setCaldroidListener(listener);
+
         caldroidFragment.clearSelectedDates();
         colorCalendrierLocal();
 
@@ -423,7 +450,7 @@ public class CalendrierActivity extends ActionBarActivity implements OnItemSelec
         // TODO Auto-generated method stub
     }
 }
-
+/*
 class MyCalendar {
     public String name;
     public String id;
@@ -435,4 +462,4 @@ class MyCalendar {
     public String toString() {
         return name;
     }
-}
+}*/
