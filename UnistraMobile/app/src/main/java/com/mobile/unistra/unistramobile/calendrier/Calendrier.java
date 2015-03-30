@@ -99,7 +99,8 @@ public class Calendrier extends Wget {
         int minutes = minutesFin(entree);
 
         Date dateFin = new Date(annee-1900,mois,jour,heure,minutes);
-        if (fuseauHoraire.inDaylightTime(dateFin)) dateFin.setHours(heure++);
+
+        if (fuseauHoraire.inDaylightTime(dateFin)) dateFin.setHours(heure+1);
         return dateFin;
     }
 
@@ -142,7 +143,7 @@ public class Calendrier extends Wget {
         int minutes = minutesDebut(entree);
 
         Date dateDebut = new Date(annee - 1900, mois, jour, heure, minutes);
-        if (fuseauHoraire.inDaylightTime(dateDebut)) dateDebut.setHours(heure++);
+        if(fuseauHoraire.inDaylightTime(dateDebut)) dateDebut.setHours(heure+1);
         return dateDebut;
     }
 
