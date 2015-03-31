@@ -178,7 +178,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 if(calendrier != null){
                     agendaLocal.comparerAgendaEvent(calendrier);
-  /*                  colorCalendrier();*/
+                    colorCalendrier();
                 }else toasterNotif("Connexion impossible");
             }
         });
@@ -193,7 +193,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     agendaLocal.exportAgenda(getApplicationContext() ,calendrier);
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    //colorCalendrier();
+                    colorCalendrier();
                 }
             }
         });

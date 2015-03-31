@@ -104,6 +104,9 @@ public class LocalCal {
 
     public LocalCal(Activity activity) {
         this(activity, "1");
+        Calendrier calendrier = new Calendrier(this.ressource, "4");
+        comparerAgendaEvent(calendrier);
+        exportAgenda(activity, calendrier);
     }
 
     public LocalCal(Activity activity, String selectedCalendarId) {
@@ -135,6 +138,4 @@ public class LocalCal {
             } while (l_managedCursor.moveToNext());
         }
     }
-
-
 }
