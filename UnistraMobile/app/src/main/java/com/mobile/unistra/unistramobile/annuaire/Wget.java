@@ -56,7 +56,7 @@ public class Wget extends Thread
             }
         }
 
-
+        client.close();
     }
 
     public String getHtml()

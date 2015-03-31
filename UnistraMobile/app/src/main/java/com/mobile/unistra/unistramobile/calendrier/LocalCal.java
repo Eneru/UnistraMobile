@@ -102,6 +102,11 @@ public class LocalCal {
         return data;
     }
 
+    /**
+     * Constructeur à utiliser pour la synchronisation uniquement !
+     * <br>Il envoit directement la requête pour récupérer le calendrier "favori" sur l'agenda par défaut du téléphone, après vérification des doublons.
+     * @param activity Activité appelante ; indispensable pour les "appels système"
+     */
     public LocalCal(Activity activity) {
         this(activity, "1");
         Calendrier calendrier = new Calendrier(this.ressource, "4");
@@ -109,6 +114,11 @@ public class LocalCal {
         exportAgenda(activity, calendrier);
     }
 
+    /**
+     * Constructeur usuel.
+     * @param activity
+     * @param selectedCalendarId
+     */
     public LocalCal(Activity activity, String selectedCalendarId) {
         this.ressource = chargerRessources(activity);
         this.selectedCalendarId = selectedCalendarId ;
@@ -122,19 +132,14 @@ public class LocalCal {
         }
         String[] l_projection = new String[]{"title", "dtstart", "dtend"};
         Cursor l_managedCursor = activity.managedQuery(l_eventUri, l_projection, "calendar_id=" + this.selectedCalendarId, null, "dtstart ASC, dtend ASC");
-        if (l_managedCursor.moveToFirst()){//.moveToFirst()) {
-            int l_cnt = 0;
+        if (l_managedCursor.moveToFirst()){
             String l_title;
-            String l_begin;
-            String l_end;
             int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
             int l_colBegin = l_managedCursor.getColumnIndex(l_projection[1]);
             int l_colEnd = l_managedCursor.getColumnIndex(l_projection[1]);
             do {
                 l_title = l_managedCursor.getString(l_colTitle);
-                ++l_cnt;
                 agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
-
             } while (l_managedCursor.moveToNext());
         }
     }

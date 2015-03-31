@@ -48,9 +48,6 @@ public class Calendrier extends Wget {
 
         this.listeEvents = listeEvents();
         this.ressources = ressource;
-
-        //Le tri des informations reçues aura probablement lieu ici
-        this.interrupt();
     }
 
     public void refresh(){
