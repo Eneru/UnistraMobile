@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
@@ -25,8 +26,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alamkanak.weekview.WeekView;
+import com.alamkanak.weekview.WeekViewEvent;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
+import com.mobile.unistra.unistramobile.calendrier.LocalCal;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
 
@@ -41,110 +45,63 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener {
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
-    Calendrier calendrier;
+    public Calendrier calendrier;
+    //WeekView mWeekView;
     EditText txtRessource;
     EditText txtSemaines;
 
-    public ArrayList<Event> agendaLocal;
+    public LocalCal agendaLocal;
 
     //private MyCalendar m_calendars[];
     String calendriers[];
     String selectedCalendarId = "1";
 
-    /**
-     * Méthode permettant de récupérer tous les événements sur l'agenda du téléphone.
-     */
-    private void getLocalEvents() {
-        Uri l_eventUri;
-        agendaLocal = new ArrayList<Event>();
-
-        if (Build.VERSION.SDK_INT >= 8 ) {
-            l_eventUri = Uri.parse("content://com.android.calendar/events");
-        } else {
-            l_eventUri = Uri.parse("content://calendar/events");
-        }
-        String[] l_projection = new String[]{"title", "dtstart", "dtend"};
-        Cursor l_managedCursor = this.managedQuery(l_eventUri, l_projection, "calendar_id=" + selectedCalendarId, null, "dtstart ASC, dtend ASC");
-        if (l_managedCursor.moveToFirst()){//.moveToFirst()) {
-            int l_cnt = 0;
-            String l_title;
-            String l_begin;
-            String l_end;
-            int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
-            int l_colBegin = l_managedCursor.getColumnIndex(l_projection[1]);
-            int l_colEnd = l_managedCursor.getColumnIndex(l_projection[1]);
-            do {
-                l_title = l_managedCursor.getString(l_colTitle);
-                l_begin = getDateTimeStr(l_managedCursor.getString(l_colBegin));
-                l_end = getDateTimeStr(l_managedCursor.getString(l_colEnd));
-                ++l_cnt;
-                agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
-
-            } while (l_managedCursor.moveToNext());
-        }
-    }
-
-    private static final String DATE_TIME_FORMAT = "yyyy MMM dd, HH:mm:ss";
-    public static String getDateTimeStr(String p_time_in_millis) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
-        Date l_time = new Date(Long.parseLong(p_time_in_millis));
-        return sdf.format(l_time);
-    }
-
-    /**
-     * Méthode exportant la liste d'événements vers l'agenda par défaut du téléphone.
-     */
-    public void exportAgenda(){
-        if(agendaLocal != null && calendrier != null && calendrier.listeEvents != null) {
-            for (Event event : calendrier.listeEvents) {
-                if(!event.estDoublon()) {
-                    ContentResolver cr = getContentResolver();
-                    ContentValues values = new ContentValues();
-
-                    values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
-                    values.put(CalendarContract.Events.TITLE, event.getTitre());
-                    values.put(CalendarContract.Events.DESCRIPTION, event.getUid() + event.getDescription());
-                    values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
-                    TimeZone timeZone = event.getDebut().getTimeZone();
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
-
-                    // default calendar
-                    values.put(CalendarContract.Events.CALENDAR_ID, selectedCalendarId);
-
-                    //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
-                    //        + dtUntill);
-                    //for one hour
-                    //values.put(CalendarContract.Events.DURATION, "+P1H");
-
-                    //values.put(CalendarContract.Events.HAS_ALARM, 1);
-
-                /*if (hasAlert == true) {
-                    long eventId = Long.parseLong(uri.getLastPathSegment());
-                    calendarEventContentValues.clear();
-                    calendarEventContentValues.put("event_id", eventId);
-                    calendarEventContentValues.put("method", 1);
-                    calendarEventContentValues.put("minutes", alertTime);
-                    contentResolver.insert(Uri.parse(reminderProviderName), calendarEventContentValues);
-                }*/
-
-                    // insert event to calendar
-                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
-                }
-            }
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
+
+        //!!!!!!!
+        agendaLocal = new LocalCal(this, selectedCalendarId);
+
+       /* WeekView.EventClickListener mEventClickListener = new WeekView.EventClickListener() {
+            @Override
+            public void onEventClick(WeekViewEvent weekViewEvent, RectF rectF) {
+
+            }
+        };
+
+        WeekView.MonthChangeListener mMonthChangeListener = new WeekView.MonthChangeListener() {
+            @Override
+            public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+                // Populate the week view with some events.
+                List<WeekViewEvent> events = getEvents(newYear, newMonth);
+                return events;
+            }
+        };
+
+        // Get a reference for the week view in the layout.
+        mWeekView = (WeekView) findViewById(R.id.weekView);
+
+        // Set an action when any event is clicked.
+        mWeekView.setOnEventClickListener(mEventClickListener);
+
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        mWeekView.setMonthChangeListener(mMonthChangeListener);
+
+        // Set long press listener for events.
+  //      mWeekView.setEventLongPressListener(mEventLongPressListener);
+
+        /*******************/
+        /*******************/
 
         getCalendar(this);
 
@@ -159,6 +116,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
         txtSemaines= (EditText) findViewById(R.id.weekEditText);
+
 
         // Initialisation du widget Caldroid
         caldroidFragment = new CaldroidFragment();
@@ -197,7 +155,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         caldroidFragment.setCaldroidListener(listener);
 
         // Chargement du calendrier local
-        getLocalEvents();
+        agendaLocal = new LocalCal(this,selectedCalendarId);
 
         // Affichage du calendrier local
         colorCalendrierLocal();
@@ -219,8 +177,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 }
 
                 if(calendrier != null){
-                    comparerAgendaEvent();
-                    colorCalendrier();
+                    agendaLocal.comparerAgendaEvent(calendrier);
+  /*                  colorCalendrier();*/
                 }else toasterNotif("Connexion impossible");
             }
         });
@@ -232,10 +190,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onClick(View view) {
                 if(calendrier!=null && !calendrier.listeEvents.isEmpty()) {
-                    exportAgenda();
+                    agendaLocal.exportAgenda(getApplicationContext() ,calendrier);
                     toasterNotif("Événements ajoutés à l'agenda");
-                    comparerAgendaEvent();
-                    colorCalendrier();
+                    agendaLocal.comparerAgendaEvent(calendrier);
+                    //colorCalendrier();
                 }
             }
         });
@@ -254,14 +212,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         if (id == R.id.action_settings)
             return true;
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Compare les événements de l'agenda local avec les événements chargés par l'ADE.
-     */
-    public void comparerAgendaEvent(){
-        if(agendaLocal != null && calendrier != null)
-            calendrier.filtrerDoublons(agendaLocal);
     }
 
     /**
@@ -375,7 +325,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 couleur = R.color.black;
         }
 
-        for(Event event:agendaLocal){
+        for(Event event:agendaLocal.getEvents()){
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
@@ -419,7 +369,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
 
         // Chargement du calendrier local
-        getLocalEvents();
+        agendaLocal = new LocalCal(this, selectedCalendarId);
 
         caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
@@ -440,7 +390,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         if(calendrier != null) {
             calendrier.refresh();
-            comparerAgendaEvent();
+            agendaLocal.comparerAgendaEvent(calendrier);
             colorCalendrier();
         }
     }
@@ -449,17 +399,14 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
     }
+
+    private List<WeekViewEvent> getEvents(int newYear, int newMonth){
+        List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+        int n = 1;
+        for(Event e : agendaLocal.getEvents()){
+            WeekViewEvent event = new WeekViewEvent(1,e.getTitre(), e.getDebut(), e.getFin());
+            events.add(event);
+        }
+        return events;
+    }
 }
-/*
-class MyCalendar {
-    public String name;
-    public String id;
-    public MyCalendar(String _name, String _id) {
-        name = _name;
-        id = _id;
-    }
-    @Override
-    public String toString() {
-        return name;
-    }
-}*/
