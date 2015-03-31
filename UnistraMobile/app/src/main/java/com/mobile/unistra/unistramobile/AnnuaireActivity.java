@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,6 +39,7 @@ public class AnnuaireActivity extends ActionBarActivity {
     private AtomContactListAdapter adapter;
 
     private ListView listView;
+    private LinearLayout layout;
     private EditText editText;
 
     @Override
@@ -51,6 +54,9 @@ public class AnnuaireActivity extends ActionBarActivity {
         adapter = new AtomContactListAdapter
                 (AnnuaireActivity.this,R.layout.list_annuaire_item,new ArrayList<AtomContact>());
         editText = (EditText)findViewById(R.id.nameEditText);
+        listView = (ListView)findViewById(R.id.list_recherche);
+        listView.setAdapter(adapter);
+        layout = (LinearLayout)findViewById(R.id.progressbar_view);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -61,29 +67,7 @@ public class AnnuaireActivity extends ActionBarActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length()>=4)
                 {
-                    adapter.clear();
-                    prefix = s.toString();
-                    try
-                    {
-                        String[] recherche = s.toString().split(" ");
-                        Annuaire annuaire;
-                        if (recherche.length >= 2)
-                            annuaire = new Annuaire(recherche[1],recherche[0],"","","");
-                        else
-                            annuaire = new Annuaire("",recherche[0],"","","");
-                        ArrayList<Prof> profs = annuaire.getAnnuaire();
-                        for (Prof p : profs)
-                            adapter.add
-                                    (new AtomContact(p.getIdentite(),p.getTelephone(),p.getMail()));
-                    }
-                    catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }catch (IOException e) {
-                        e.printStackTrace();
-                    }catch (NoResultException e) {
-                        e.printStackTrace();
-                        editText.setText(editText.getText().toString().substring(0,editText.getText().toString().length()-2));
-                    }
+                    new Task().execute();
                 }
                 else
                 {
@@ -97,8 +81,55 @@ public class AnnuaireActivity extends ActionBarActivity {
 
             }
         });
-        listView = (ListView)findViewById(R.id.list_recherche);
-        listView.setAdapter(adapter);
+    }
+
+    class Task extends AsyncTask<String, Integer, Boolean> {
+        @Override
+        protected void onPreExecute() {
+            layout.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.GONE);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            layout.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
+            adapter.notifyDataSetChanged();
+            super.onPostExecute(result);
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            try {
+                adapter.clear();
+                prefix = editText.getText().toString();
+                try
+                {
+                    String[] recherche = prefix.split(" ");
+                    Annuaire annuaire;
+                    if (recherche.length >= 2)
+                        annuaire = new Annuaire(recherche[1],recherche[0],"","","");
+                    else
+                        annuaire = new Annuaire("",recherche[0],"","","");
+                    ArrayList<Prof> profs = annuaire.getAnnuaire();
+                    for (Prof p : profs)
+                        adapter.add
+                                (new AtomContact(p.getIdentite(),p.getTelephone(),p.getMail()));
+                }
+                catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }catch (NoResultException e) {
+                    e.printStackTrace();
+                    editText.setText(editText.getText().toString().substring(0,editText.getText().toString().length()-2));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
 
@@ -236,22 +267,20 @@ class AtomContactListAdapter extends ArrayAdapter<AtomContact> {
         holder.atomContact = items.get(position);
         holder.call = (ImageButton)row.findViewById(R.id.image_button_appeler);
         final AtomContactHolder finalHolder = holder;
-        holder.call.setOnTouchListener(new View.OnTouchListener() {
+        holder.call.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                    String number= finalHolder.atomContact.getNum();
+            public void onClick(View v) {
+                String number= finalHolder.atomContact.getNum();
                 call_teacher(number);
-                return false;
             }
         });
         holder.call.setTag(holder.atomContact);
         holder.sendto = (ImageButton)row.findViewById(R.id.image_button_mailer);
-        holder.sendto.setOnTouchListener(new View.OnTouchListener() {
+        holder.sendto.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public void onClick(View v) {
                 String email = finalHolder.atomContact.getMail();
-                    mail_teacher(email);
-                return false;
+                mail_teacher(email);
             }
         });
         holder.sendto.setTag(holder.atomContact);

@@ -15,6 +15,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         ImageButton btn_annu = (ImageButton) findViewById(R.id.imageButton4);
         btn_annu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,9 +37,10 @@ public class MainActivity extends ActionBarActivity {
         btn_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent goMap= new Intent(MainActivity.this,MapsActivity.class);
+                Intent goMap= new Intent(MainActivity.this,LoadingMap.class);
                 startActivity(goMap);
             }
+
         });
     }
 

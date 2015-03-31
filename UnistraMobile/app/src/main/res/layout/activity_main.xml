@@ -28,7 +28,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/imageButton"
                     android:layout_gravity="center"
-                    android:background="@drawable/calendar146" />
+                    android:src="@drawable/calendar146" />
             </FrameLayout>
 
             <FrameLayout
@@ -41,7 +41,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/imageButton2"
                     android:layout_gravity="center"
-                    android:background="@drawable/restaurant26" />
+                    android:src="@drawable/restaurant26" />
             </FrameLayout>
         </LinearLayout>
 
@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/imageButton3"
                     android:layout_gravity="center"
-                    android:background="@drawable/drawing19" />
+                    android:src="@drawable/drawing19" />
             </FrameLayout>
 
             <FrameLayout
@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/imageButton4"
                     android:layout_gravity="center"
-                    android:background="@drawable/telephone38" />
+                    android:src="@drawable/telephone38" />
             </FrameLayout>
         </LinearLayout>
     </LinearLayout>

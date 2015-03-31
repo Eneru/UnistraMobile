@@ -1,6 +1,5 @@
 package com.mobile.unistra.unistramobile;
 
-import android.graphics.Color;
 import android.location.Location;
 import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
@@ -12,15 +11,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-//import com.mobile.unistra.unistramobile.map.GMapV2Direction;
 import com.mobile.unistra.unistramobile.map.ItineraireTask;
 
 import org.w3c.dom.Document;
