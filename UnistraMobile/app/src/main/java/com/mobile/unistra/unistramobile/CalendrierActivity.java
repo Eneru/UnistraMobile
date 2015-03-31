@@ -221,7 +221,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 if(calendrier != null){
                     comparerAgendaEvent();
                     colorCalendrier();
-                }
+                }else toasterNotif("Connexion impossible");
             }
         });
 
