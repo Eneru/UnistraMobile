@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/background_light">
-    <LinearLayout
+    <!--LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -26,5 +26,10 @@
                 android:layout_height="wrap_content"
                 android:text="Dismiss" />
         </LinearLayout>
-    </LinearLayout>
+    </LinearLayout-->
+    <fragment
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:name="com.roomorama.caldroid.DateGridFragment"
+        android:id="@+id/calendar1"/>
 </LinearLayout>

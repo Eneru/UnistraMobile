@@ -80,13 +80,13 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
 
-    <fragment
+    <!--fragment
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:name="com.roomorama.caldroid.DateGridFragment"
         android:id="@+id/calendar1"
         android:layout_below="@+id/spinner"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true" /-->
 
     <TextView
         android:layout_width="wrap_content"
@@ -105,7 +105,7 @@
         android:layout_toRightOf="@+id/labelCalendrier"
         android:spinnerMode="dropdown" />
 
-    <!--com.alamkanak.weekview.WeekView
+    <com.alamkanak.weekview.WeekView
         android:id="@+id/weekView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -125,6 +125,6 @@
         app:headerRowBackgroundColor="#ffefefef"
         app:dayBackgroundColor="#05000000"
         app:todayBackgroundColor="#1848adff"
-        app:headerColumnBackground="#ffffffff"/-->
+        app:headerColumnBackground="#ffffffff"/>
 
 </RelativeLayout>
