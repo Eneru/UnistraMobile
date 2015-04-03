@@ -52,7 +52,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener {
+public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener, WeekView.MonthChangeListener,
+        WeekView.EventClickListener, WeekView.EventLongPressListener {
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
@@ -72,40 +73,20 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-        //!!!!!!!
         agendaLocal = new LocalCal(this, selectedCalendarId);
-
-       /* WeekView.EventClickListener mEventClickListener = new WeekView.EventClickListener() {
-            @Override
-            public void onEventClick(WeekViewEvent weekViewEvent, RectF rectF) {
-
-            }
-        };
-
-        WeekView.MonthChangeListener mMonthChangeListener = new WeekView.MonthChangeListener() {
-            @Override
-            public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                // Populate the week view with some events.
-                List<WeekViewEvent> events = getEvents(newYear, newMonth);
-                return events;
-            }
-        };
 
         // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);
 
         // Set an action when any event is clicked.
-        mWeekView.setOnEventClickListener(mEventClickListener);
+        mWeekView.setOnEventClickListener(this);
 
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
-        mWeekView.setMonthChangeListener(mMonthChangeListener);
+        mWeekView.setMonthChangeListener(this);
 
         // Set long press listener for events.
-  //      mWeekView.setEventLongPressListener(mEventLongPressListener);
-
-        /*******************/
-        /*******************/
+        mWeekView.setEventLongPressListener(this);
 
         getCalendar(this);
 
@@ -123,7 +104,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
 
         // Initialisation du widget Caldroid
-        caldroidFragment = new CaldroidFragment();
+        /*caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
         Calendar cal = Calendar.getInstance();
         args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
@@ -142,35 +123,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onSelectDate(Date date, View view) {
                 toasterNotif("Clic sur la date");
-
-
-                //************************
-                initiatePopupWindow();
-                /*LayoutInflater layoutInflater
-                        = (LayoutInflater)getBaseContext()
-                        .getSystemService(LAYOUT_INFLATER_SERVICE);
-                View popupView = layoutInflater.inflate(R.layout.popup, null);
-                final PopupWindow popupWindow = new PopupWindow(
-                        popupView,
-                        LayoutParams.WRAP_CONTENT,
-                        LayoutParams.WRAP_CONTENT);
-                Button btnDismiss = (Button)popupView.findViewById(R.id.dismiss);
-                btnDismiss.setOnClickListener(new Button.OnClickListener(){
-
-                    @Override
-                    public void onClick(View v) {
-                        // TODO Auto-generated method stub
-                        popupWindow.dismiss();
-                    }});
-
-                //popupWindow.showAsDropDown(txtRessource);
-
-                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
-                popupWindow.update(0, 0, popupWindow.getWidth(), popupWindow.getHeight());
-                */
-                Log.e("AFFI", "CHAY");
-                //**************************
-                // On affichera la liste des cours sur la date donnée
             }
             @Override
             public void onChangeMonth(int month, int year) {
@@ -185,12 +137,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             }
         };
         caldroidFragment.setCaldroidListener(listener);
-
-        // Chargement du calendrier local
-        agendaLocal = new LocalCal(this,selectedCalendarId);
-
+        */
         // Affichage du calendrier local
-        colorCalendrierLocal();
+        //colorCalendrierLocal();
 
         // Chargement des ressources
         String ressources = chargerRessources(this);
@@ -210,7 +159,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 if(calendrier != null){
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    colorCalendrier();
+                    //colorCalendrier();
                 }else toasterNotif("Connexion impossible");
             }
         });
@@ -225,7 +174,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     agendaLocal.exportAgenda(getApplicationContext() ,calendrier);
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    colorCalendrier();
+                    //colorCalendrier();
                 }
             }
         });
@@ -315,7 +264,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     /**
      * Colore les événements trouvés
-     */
+     *//*
     private void colorCalendrier(){
         for(Event e:calendrier.listeEvents){
             if(e.doublon)
@@ -324,11 +273,11 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 caldroidFragment.setBackgroundResourceForDate(R.color.red,new Date(e.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
-    }
+    }*/
 
     /**
      * Colore les événements trouvés sur l'agenda local
-     */
+     *//*
     private void colorCalendrierLocal(){
         int couleur = R.color.caldroid_gray;
         switch(Integer.parseInt(selectedCalendarId)-1){
@@ -361,7 +310,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
-    }
+    }*/
 
     public void getCalendar(Context c) {
         String projection[] = {"_id", "calendar_displayName"};
@@ -402,7 +351,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         // Chargement du calendrier local
         agendaLocal = new LocalCal(this, selectedCalendarId);
-
+        /*
         caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
         Calendar cal = Calendar.getInstance();
@@ -424,41 +373,57 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             calendrier.refresh();
             agendaLocal.comparerAgendaEvent(calendrier);
             colorCalendrier();
-        }
-
-
+        }*/
     }
+
     private PopupWindow pwindo;
     Button btnClosePopup;
-    /*private void initiatePopupWindow() {
-        try {
-            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View layout = inflater.inflate(R.layout.popup, null);
-            btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
-            btnClosePopup.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v){
-                    pwindo.dismiss();
-                }
-            });
-
-            pwindo = new PopupWindow(layout, 300, 370, true);
-            pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
-
     private void initiatePopupWindow() {
         try {
             LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View layout = inflater.inflate(R.layout.popup, null);
-            btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
+            /*btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
             btnClosePopup.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v){
                     pwindo.dismiss();
                 }
-            });
+            });*/
+            caldroidFragment = new CaldroidFragment();
+        Bundle args = new Bundle();
+        Calendar cal = Calendar.getInstance();
+        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
+        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
+        caldroidFragment.setArguments(args);
+
+        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+        t.replace(R.id.calendar1, caldroidFragment);
+        t.commit();
+
+
+        // Setup listener
+        final SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
+        listener = new CaldroidListener() {
+            @Override
+            public void onSelectDate(Date date, View view) {
+                toasterNotif("Clic sur la date");
+            }
+            @Override
+            public void onChangeMonth(int month, int year) {
+            }
+            @Override
+            public void onLongClickDate(Date date, View view) {
+                toasterNotif("Clic long");
+                // On proposera de supprimer la date donnée ?
+            }
+            @Override
+            public void onCaldroidViewCreated() {
+            }
+        };
+        caldroidFragment.setCaldroidListener(listener);
+
+
+
 
             pwindo =  new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT,true);
             //pwindo = new PopupWindow(layout, 300, 370, true);
@@ -477,10 +442,40 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     private List<WeekViewEvent> getEvents(int newYear, int newMonth){
         List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
         int n = 1;
-        for(Event e : agendaLocal.getEvents()){
-            WeekViewEvent event = new WeekViewEvent(1,e.getTitre(), e.getDebut(), e.getFin());
-            events.add(event);
+
+        if(agendaLocal != null && agendaLocal.getEvents() != null) {
+            for (Event e : agendaLocal.getEvents()) {
+                WeekViewEvent event = new WeekViewEvent(5, e.getTitre(), e.getDebut(), e.getFin());
+                event.setColor(getResources().getColor(R.color.fuchsia));
+                events.add(event);
+            }
+        }
+        if(calendrier != null && calendrier.getEvents() != null){
+            for(Event e : calendrier.getEvents()){
+                WeekViewEvent event = new WeekViewEvent(5,e.getTitre(), e.getDebut(), e.getFin());
+                event.setColor(getResources().getColor(R.color.fuchsia));
+                events.add(event);
+            }
         }
         return events;
+    }
+
+    @Override
+    public void onEventClick(WeekViewEvent weekViewEvent, RectF rectF) {
+        toasterNotif("mEventLickListener");
+        initiatePopupWindow();
+    }
+
+    @Override
+    public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+        toasterNotif("mMonthChangeListener");
+        // Populate the week view with some events.
+        List<WeekViewEvent> events = getEvents(newYear, newMonth);
+        return events;
+    }
+
+    @Override
+    public void onEventLongPress(WeekViewEvent event, RectF eventRect){
+        toasterNotif("mEventLongPressListener");
     }
 }

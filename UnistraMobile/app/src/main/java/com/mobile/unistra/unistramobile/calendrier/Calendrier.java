@@ -265,6 +265,7 @@ public class Calendrier extends Wget {
      * @return Une chaîne de caractère contenant des nombres, séparés par des virgules (pas d'espace)
      */
     public String getRessources(){return this.ressources;}
+    public ArrayList<Event> getEvents(){return this.listeEvents;}
 
     public void filtrerDoublons(ArrayList<Event> agendaLocal){
         for(Event local : agendaLocal){
