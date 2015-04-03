@@ -14,14 +14,18 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +57,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     CaldroidListener listener;
     Spinner spinner;
     public Calendrier calendrier;
-    //WeekView mWeekView;
+    WeekView mWeekView;
     EditText txtRessource;
     EditText txtSemaines;
 
@@ -138,6 +142,34 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onSelectDate(Date date, View view) {
                 toasterNotif("Clic sur la date");
+
+
+                //************************
+                initiatePopupWindow();
+                /*LayoutInflater layoutInflater
+                        = (LayoutInflater)getBaseContext()
+                        .getSystemService(LAYOUT_INFLATER_SERVICE);
+                View popupView = layoutInflater.inflate(R.layout.popup, null);
+                final PopupWindow popupWindow = new PopupWindow(
+                        popupView,
+                        LayoutParams.WRAP_CONTENT,
+                        LayoutParams.WRAP_CONTENT);
+                Button btnDismiss = (Button)popupView.findViewById(R.id.dismiss);
+                btnDismiss.setOnClickListener(new Button.OnClickListener(){
+
+                    @Override
+                    public void onClick(View v) {
+                        // TODO Auto-generated method stub
+                        popupWindow.dismiss();
+                    }});
+
+                //popupWindow.showAsDropDown(txtRessource);
+
+                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+                popupWindow.update(0, 0, popupWindow.getWidth(), popupWindow.getHeight());
+                */
+                Log.e("AFFI", "CHAY");
+                //**************************
                 // On affichera la liste des cours sur la date donnée
             }
             @Override
@@ -388,10 +420,52 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         caldroidFragment.clearSelectedDates();
         colorCalendrierLocal();
 
-        if(calendrier != null) {
+        if (calendrier != null) {
             calendrier.refresh();
             agendaLocal.comparerAgendaEvent(calendrier);
             colorCalendrier();
+        }
+
+
+    }
+    private PopupWindow pwindo;
+    Button btnClosePopup;
+    /*private void initiatePopupWindow() {
+        try {
+            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.popup, null);
+            btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
+            btnClosePopup.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v){
+                    pwindo.dismiss();
+                }
+            });
+
+            pwindo = new PopupWindow(layout, 300, 370, true);
+            pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    private void initiatePopupWindow() {
+        try {
+            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.popup, null);
+            btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
+            btnClosePopup.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v){
+                    pwindo.dismiss();
+                }
+            });
+
+            pwindo =  new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT,true);
+            //pwindo = new PopupWindow(layout, 300, 370, true);
+            pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
