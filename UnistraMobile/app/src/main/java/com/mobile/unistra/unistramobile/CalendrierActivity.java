@@ -3,6 +3,7 @@ package com.mobile.unistra.unistramobile;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -357,13 +358,20 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                                                 int position, long id) {
                             toasterNotif("Clic sur un objet");
                             pwindo.dismiss();
-                            panneauDeBase.getForeground().setAlpha(0);
                         }
                     });
 
                     pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+                    pwindo.setBackgroundDrawable(new BitmapDrawable());
+                    pwindo.setOutsideTouchable(true);
                     pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
-                    panneauDeBase.getForeground().setAlpha( 220);
+                    pwindo.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                        @Override
+                        public void onDismiss() {
+                            panneauDeBase.getForeground().setAlpha(0);
+                        }
+                    });
+                    panneauDeBase.getForeground().setAlpha( 200);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
