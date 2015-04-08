@@ -52,13 +52,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener, WeekView.MonthChangeListener,
-        WeekView.EventClickListener, WeekView.EventLongPressListener {
+public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
     public Calendrier calendrier;
-    WeekView mWeekView;
     EditText txtRessource;
     EditText txtSemaines;
 
@@ -75,19 +73,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         agendaLocal = new LocalCal(this, selectedCalendarId);
 
-        // Get a reference for the week view in the layout.
-        mWeekView = (WeekView) findViewById(R.id.weekView);
-
-        // Set an action when any event is clicked.
-        mWeekView.setOnEventClickListener(this);
-
-        // The week view has infinite scrolling horizontally. We have to provide the events of a
-        // month every time the month changes on the week view.
-        mWeekView.setMonthChangeListener(this);
-
-        // Set long press listener for events.
-        mWeekView.setEventLongPressListener(this);
-        mWeekView.goToHour(8.0);
         getCalendar(this);
 
         spinner = (Spinner) findViewById(R.id.spinner);
@@ -104,7 +89,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
 
         // Initialisation du widget Caldroid
-        /*caldroidFragment = new CaldroidFragment();
+        caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
         Calendar cal = Calendar.getInstance();
         args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
@@ -137,9 +122,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             }
         };
         caldroidFragment.setCaldroidListener(listener);
-        */
+
         // Affichage du calendrier local
-        //colorCalendrierLocal();
+        colorCalendrierLocal();
 
         // Chargement des ressources
         String ressources = chargerRessources(this);
@@ -159,7 +144,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 if(calendrier != null){
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    //colorCalendrier();
+                    colorCalendrier();
                 }else toasterNotif("Connexion impossible");
             }
         });
@@ -174,7 +159,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     agendaLocal.exportAgenda(getApplicationContext() ,calendrier);
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    //colorCalendrier();
+                    colorCalendrier();
                 }
             }
         });
@@ -264,23 +249,23 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     /**
      * Colore les événements trouvés
-     *//*
+     */
     private void colorCalendrier(){
         for(Event e:calendrier.listeEvents){
             if(e.doublon)
-                caldroidFragment.setBackgroundResourceForDate(R.color.fuchsia,new Date(e.getDebut().getTimeInMillis()));
+                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_darker_gray,new Date(e.getDebut().getTimeInMillis()));
             else
-                caldroidFragment.setBackgroundResourceForDate(R.color.red,new Date(e.getDebut().getTimeInMillis()));
+                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
-    }*/
+    }
 
     /**
      * Colore les événements trouvés sur l'agenda local
-     *//*
+     */
     private void colorCalendrierLocal(){
         int couleur = R.color.caldroid_gray;
-        switch(Integer.parseInt(selectedCalendarId)-1){
+        /*switch(Integer.parseInt(selectedCalendarId)-1){
             case 0 :
                 couleur = R.color.caldroid_lighter_gray;
                 break;
@@ -305,12 +290,12 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             default :
                 couleur = R.color.black;
         }
-
+        */
         for(Event event:agendaLocal.getEvents()){
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
-    }*/
+    }
 
     public void getCalendar(Context c) {
         String projection[] = {"_id", "calendar_displayName"};
@@ -351,7 +336,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         // Chargement du calendrier local
         agendaLocal = new LocalCal(this, selectedCalendarId);
-        /*
+
         caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
         Calendar cal = Calendar.getInstance();
@@ -373,7 +358,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             calendrier.refresh();
             agendaLocal.comparerAgendaEvent(calendrier);
             colorCalendrier();
-        }*/
+        }
     }
 
     private PopupWindow pwindo;
@@ -437,88 +422,5 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
-    }
-
-    private List<WeekViewEvent> getEvents(int newYear, int newMonth){
-        List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-        int n = 1;
-
-
-        Calendar startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        Calendar endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR, 1);
-        endTime.set(Calendar.MONTH, newMonth-1);
-        WeekViewEvent event = new WeekViewEvent(1, "Test", startTime, endTime);
-        event.setColor(getResources().getColor(R.color.fuchsia));
-
-        if(agendaLocal != null && agendaLocal.getEvents() != null) {
-            for (Event e : agendaLocal.getEvents()) {
-                if((e.getMoisDebut() == newMonth-1)&&(e.getAnneeDebut()==newYear)) {
-                    startTime = Calendar.getInstance();
-                    startTime.set(Calendar.DAY_OF_MONTH, e.getJourDebut());
-                    startTime.set(Calendar.HOUR_OF_DAY, e.getHeureDebut());
-                    startTime.set(Calendar.MINUTE, e.getMinuteDebut());
-                    startTime.set(Calendar.MONTH, e.getMoisDebut());//
-                    startTime.set(Calendar.YEAR, e.getAnneeDebut());
-                    endTime = (Calendar) startTime.clone();
-                    endTime.add(Calendar.HOUR_OF_DAY, e.getHeureFin());
-                    endTime.add(Calendar.MINUTE, e.getMinuteFin());
-                    event = new WeekViewEvent(5, e.getTitre(), startTime, endTime);
-                    event.setColor(getResources().getColor(R.color.gray));
-                    events.add(event);
-                }
-/*
-                WeekViewEvent event = new WeekViewEvent(5, e.getTitre(), e.getDebut(), e.getFin());
-                event.setColor(getResources().getColor(R.color.fuchsia));
-                events.add(event);*/
-            }
-        }
-        if(calendrier != null && calendrier.getEvents() != null){
-            for(Event e : calendrier.getEvents()){
-                if((e.getMoisDebut() == newMonth-1)&&(e.getAnneeDebut()==newYear)) {
-                    startTime = Calendar.getInstance();
-                    startTime.set(Calendar.DAY_OF_MONTH, e.getJourDebut());
-                    startTime.set(Calendar.HOUR_OF_DAY, e.getHeureDebut());
-                    startTime.set(Calendar.MINUTE, e.getMinuteDebut());
-                    startTime.set(Calendar.MONTH, e.getMoisDebut());//
-                    startTime.set(Calendar.YEAR, e.getAnneeDebut());
-                    endTime = (Calendar) startTime.clone();
-                    endTime.add(Calendar.HOUR_OF_DAY, e.getHeureFin());
-                    endTime.add(Calendar.MINUTE, e.getMinuteFin());
-                    event = new WeekViewEvent(5, e.getTitre(), startTime, endTime);
-                    event.setColor(getResources().getColor(R.color.blue));
-                    events.add(event);
-                }
-
-                /*WeekViewEvent event = new WeekViewEvent(5,e.getTitre(), e.getDebut(), e.getFin());
-                event.setColor(getResources().getColor(R.color.blue));
-                events.add(event);*/
-            }
-        }
-        return events;
-    }
-
-    @Override
-    public void onEventClick(WeekViewEvent weekViewEvent, RectF rectF) {
-        toasterNotif("mEventLickListener");
-        initiatePopupWindow();
-    }
-
-    @Override
-    public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-        toasterNotif("mMonthChangeListener");
-        // Populate the week view with some events.
-
-        List<WeekViewEvent> events = getEvents(newYear, newMonth);
-        return events;
-    }
-
-    @Override
-    public void onEventLongPress(WeekViewEvent event, RectF eventRect){
-        toasterNotif("mEventLongPressListener");
     }
 }
