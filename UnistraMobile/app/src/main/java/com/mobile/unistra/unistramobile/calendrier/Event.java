@@ -42,9 +42,13 @@ public class Event {
 
     public int getHeureDebut(){return dateDebut.get(GregorianCalendar.HOUR_OF_DAY);}
     public int getMinuteDebut(){return dateDebut.get(GregorianCalendar.MINUTE);}
+    public int getJourDebut(){return dateDebut.get(GregorianCalendar.DAY_OF_MONTH);}
+    public int getMoisDebut(){return dateDebut.get(GregorianCalendar.MONTH);}
+    public int getAnneeDebut(){return dateDebut.get(GregorianCalendar.YEAR);}
 
     public int getHeureFin(){return dateFin.get(GregorianCalendar.HOUR_OF_DAY);}
     public int getMinuteFin(){return dateFin.get(GregorianCalendar.MINUTE);}
+
 
     public boolean estDoublon(){
         return doublon;

@@ -87,7 +87,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         // Set long press listener for events.
         mWeekView.setEventLongPressListener(this);
-
+        mWeekView.goToHour(8.0);
         getCalendar(this);
 
         spinner = (Spinner) findViewById(R.id.spinner);
@@ -443,18 +443,60 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
         int n = 1;
 
+
+        Calendar startTime = Calendar.getInstance();
+        startTime.set(Calendar.HOUR_OF_DAY, 3);
+        startTime.set(Calendar.MINUTE, 0);
+        startTime.set(Calendar.MONTH, newMonth-1);
+        startTime.set(Calendar.YEAR, newYear);
+        Calendar endTime = (Calendar) startTime.clone();
+        endTime.add(Calendar.HOUR, 1);
+        endTime.set(Calendar.MONTH, newMonth-1);
+        WeekViewEvent event = new WeekViewEvent(1, "Test", startTime, endTime);
+        event.setColor(getResources().getColor(R.color.fuchsia));
+
         if(agendaLocal != null && agendaLocal.getEvents() != null) {
             for (Event e : agendaLocal.getEvents()) {
+                if((e.getMoisDebut() == newMonth-1)&&(e.getAnneeDebut()==newYear)) {
+                    startTime = Calendar.getInstance();
+                    startTime.set(Calendar.DAY_OF_MONTH, e.getJourDebut());
+                    startTime.set(Calendar.HOUR_OF_DAY, e.getHeureDebut());
+                    startTime.set(Calendar.MINUTE, e.getMinuteDebut());
+                    startTime.set(Calendar.MONTH, e.getMoisDebut());//
+                    startTime.set(Calendar.YEAR, e.getAnneeDebut());
+                    endTime = (Calendar) startTime.clone();
+                    endTime.add(Calendar.HOUR_OF_DAY, e.getHeureFin());
+                    endTime.add(Calendar.MINUTE, e.getMinuteFin());
+                    event = new WeekViewEvent(5, e.getTitre(), startTime, endTime);
+                    event.setColor(getResources().getColor(R.color.gray));
+                    events.add(event);
+                }
+/*
                 WeekViewEvent event = new WeekViewEvent(5, e.getTitre(), e.getDebut(), e.getFin());
                 event.setColor(getResources().getColor(R.color.fuchsia));
-                events.add(event);
+                events.add(event);*/
             }
         }
         if(calendrier != null && calendrier.getEvents() != null){
             for(Event e : calendrier.getEvents()){
-                WeekViewEvent event = new WeekViewEvent(5,e.getTitre(), e.getDebut(), e.getFin());
-                event.setColor(getResources().getColor(R.color.fuchsia));
-                events.add(event);
+                if((e.getMoisDebut() == newMonth-1)&&(e.getAnneeDebut()==newYear)) {
+                    startTime = Calendar.getInstance();
+                    startTime.set(Calendar.DAY_OF_MONTH, e.getJourDebut());
+                    startTime.set(Calendar.HOUR_OF_DAY, e.getHeureDebut());
+                    startTime.set(Calendar.MINUTE, e.getMinuteDebut());
+                    startTime.set(Calendar.MONTH, e.getMoisDebut());//
+                    startTime.set(Calendar.YEAR, e.getAnneeDebut());
+                    endTime = (Calendar) startTime.clone();
+                    endTime.add(Calendar.HOUR_OF_DAY, e.getHeureFin());
+                    endTime.add(Calendar.MINUTE, e.getMinuteFin());
+                    event = new WeekViewEvent(5, e.getTitre(), startTime, endTime);
+                    event.setColor(getResources().getColor(R.color.blue));
+                    events.add(event);
+                }
+
+                /*WeekViewEvent event = new WeekViewEvent(5,e.getTitre(), e.getDebut(), e.getFin());
+                event.setColor(getResources().getColor(R.color.blue));
+                events.add(event);*/
             }
         }
         return events;
@@ -470,6 +512,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         toasterNotif("mMonthChangeListener");
         // Populate the week view with some events.
+
         List<WeekViewEvent> events = getEvents(newYear, newMonth);
         return events;
     }
