@@ -19,8 +19,10 @@ import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +45,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
+    FrameLayout panneauDeBase;
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
@@ -60,6 +63,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
+
+        panneauDeBase = (FrameLayout) findViewById( R.id.panneauDeBase);
+        panneauDeBase.getForeground().setAlpha( 0);
 
         agendaLocal = new LocalCal(this, selectedCalendarId);
 
@@ -351,12 +357,13 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                                                 int position, long id) {
                             toasterNotif("Clic sur un objet");
                             pwindo.dismiss();
+                            panneauDeBase.getForeground().setAlpha(0);
                         }
                     });
 
-                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT, true);
+                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
                     pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
+                    panneauDeBase.getForeground().setAlpha( 220);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
