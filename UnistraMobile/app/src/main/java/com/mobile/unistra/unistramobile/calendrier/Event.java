@@ -64,9 +64,18 @@ public class Event {
         else return false;
     }
     public String toString(){
-        return this.titreCours + " : "
-                + (this.doublon?"EST UN DOUBLON":"isok")
-                +"\n\tà "
-                + this.getDebut().getTimeInMillis() +"\n";
+        String heureDebut = String.valueOf(this.getHeureDebut());
+        if(this.getHeureDebut() < 10) heureDebut = " " + heureDebut;
+        String heureFin = String.valueOf(this.getHeureFin());
+        if(this.getHeureFin() < 10) heureFin = " " + heureFin;
+
+        String minutesDebut = String.valueOf(this.getMinuteDebut());
+        if(this.getMinuteDebut() < 10) minutesDebut += "0";
+        String minutesFin = String.valueOf(this.getMinuteFin());
+        if(this.getMinuteFin() < 10) minutesFin += "0";
+
+        return heureDebut +"h"+ minutesDebut +" - "
+                + heureFin +"h"+minutesFin + " : "
+                + this.titreCours;
     }
 }

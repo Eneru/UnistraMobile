@@ -6,6 +6,9 @@ import com.mobile.unistra.unistramobile.annuaire.Wget;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -238,16 +241,28 @@ public class Calendrier extends Wget {
         ArrayList<Event> liste = new ArrayList<Event>();
         for(String entree: donnerEvents())
             liste.add(genererEvent(entree));
+        return trierListe(liste);
+    }
+
+    public ArrayList<Event> listeEventsJour(GregorianCalendar date){
+        ArrayList<Event> liste = new ArrayList<Event>();
+
+        for(Event e: this.listeEvents) {
+            if(date.get(Calendar.DAY_OF_YEAR) == e.dateDebut.get(Calendar.DAY_OF_YEAR))
+                liste.add(e);
+        }
         return liste;
     }
 
-    /**
-     * Supprime un événement de la liste d'événements.
-     * @param aSupprimer élément à supprimer
-     */
-    public void remove(Event aSupprimer){
-        if(this.listeEvents.contains(aSupprimer))
-            this.listeEvents.remove(aSupprimer);
+    public String[] listEventString(GregorianCalendar date){
+        ArrayList<Event> dateDuJour = listeEventsJour(date);
+        String[] retour = new String[dateDuJour.size()];
+        int i=0;
+        for(Event e:dateDuJour){
+            retour[i] = e.toString();
+            i++;
+        }
+        return retour;
     }
 
     /**
@@ -276,5 +291,15 @@ public class Calendrier extends Wget {
                 }
             }
         }
+    }
+
+    private ArrayList<Event> trierListe(ArrayList<Event> listeATrier){
+        Collections.sort(listeATrier, new Comparator<Event>() {
+            @Override
+            public int compare(Event event1, Event event2) {
+                return event1.getDebut().compareTo(event2.getDebut());
+            }
+        });
+        return listeATrier;
     }
 }

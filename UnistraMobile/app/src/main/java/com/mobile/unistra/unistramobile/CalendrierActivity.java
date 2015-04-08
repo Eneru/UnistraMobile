@@ -1,17 +1,11 @@
 package com.mobile.unistra.unistramobile;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.RectF;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.CalendarContract;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -25,31 +19,27 @@ import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alamkanak.weekview.WeekView;
-import com.alamkanak.weekview.WeekViewEvent;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 import com.mobile.unistra.unistramobile.calendrier.LocalCal;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
@@ -59,7 +49,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     public Calendrier calendrier;
     EditText txtRessource;
     EditText txtSemaines;
-
+    private PopupWindow pwindo;
     public LocalCal agendaLocal;
 
     //private MyCalendar m_calendars[];
@@ -108,6 +98,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onSelectDate(Date date, View view) {
                 toasterNotif("Clic sur la date");
+                initiatePopupWindow(date);
             }
             @Override
             public void onChangeMonth(int month, int year) {
@@ -265,32 +256,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
      */
     private void colorCalendrierLocal(){
         int couleur = R.color.caldroid_gray;
-        /*switch(Integer.parseInt(selectedCalendarId)-1){
-            case 0 :
-                couleur = R.color.caldroid_lighter_gray;
-                break;
-            case 1 :
-                couleur = R.color.caldroid_gray;
-                break;
-            case 2 :
-                couleur = R.color.caldroid_darker_gray;
-                break;
-            case 3 :
-                couleur = R.color.caldroid_sky_blue;
-                break;
-            case 4 :
-                couleur = R.color.caldroid_holo_blue_light;
-                break;
-            case 5 :
-                couleur = R.color.caldroid_holo_blue_dark;
-                break;
-            case 6 :
-                couleur = R.color.blue;
-                break;
-            default :
-                couleur = R.color.black;
-        }
-        */
         for(Event event:agendaLocal.getEvents()){
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
@@ -316,7 +281,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             do {
                 calName = managedCursor.getString(nameCol);
                 calID = managedCursor.getString(idCol);
-                //m_calendars[cont] = new MyCalendar(calName, calID);
                 calendriers[cont] = new String(calName);
                 cont++;
             } while(managedCursor.moveToNext());
@@ -360,67 +324,43 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             colorCalendrier();
         }
     }
-
-    private PopupWindow pwindo;
-    Button btnClosePopup;
-    private void initiatePopupWindow() {
-        try {
-            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View layout = inflater.inflate(R.layout.popup, null);
-            /*btnClosePopup = (Button) layout.findViewById(R.id.dismiss);
-            btnClosePopup.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v){
-                    pwindo.dismiss();
-                }
-            });*/
-            caldroidFragment = new CaldroidFragment();
-        Bundle args = new Bundle();
-        Calendar cal = Calendar.getInstance();
-        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
-        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
-        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
-        caldroidFragment.setArguments(args);
-
-        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-        t.replace(R.id.calendar1, caldroidFragment);
-        t.commit();
-
-
-        // Setup listener
-        final SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
-        listener = new CaldroidListener() {
-            @Override
-            public void onSelectDate(Date date, View view) {
-                toasterNotif("Clic sur la date");
-            }
-            @Override
-            public void onChangeMonth(int month, int year) {
-            }
-            @Override
-            public void onLongClickDate(Date date, View view) {
-                toasterNotif("Clic long");
-                // On proposera de supprimer la date donnée ?
-            }
-            @Override
-            public void onCaldroidViewCreated() {
-            }
-        };
-        caldroidFragment.setCaldroidListener(listener);
-
-
-
-
-            pwindo =  new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT,true);
-            //pwindo = new PopupWindow(layout, 300, 370, true);
-            pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
+    }
+
+    private void initiatePopupWindow(Date date) {
+        if(calendrier != null) {
+            GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+            dateVoulue.setTime(date);
+            String[] listeAAfficher = calendrier.listEventString(dateVoulue);
+            if(listeAAfficher.length >0) {
+                try {
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View layout = inflater.inflate(R.layout.popup, null);
+                    ListView listView = (ListView) layout.findViewById(R.id.listView);
+                    TextView titrePopup = (TextView) layout.findViewById(R.id.titrePopup);
+                    titrePopup.setText(dateVoulue.get(GregorianCalendar.DAY_OF_MONTH) + "/" + (dateVoulue.get(GregorianCalendar.MONTH)+1)+"/"+dateVoulue.get(GregorianCalendar.YEAR));
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                            R.layout.support_simple_spinner_dropdown_item, listeAAfficher);
+                    listView.setBackgroundColor(getResources().getColor(R.color.caldroid_holo_blue_light));
+                    listView.setAdapter(adapter);
+                    listView.setOnItemClickListener(new OnItemClickListener() {
+                        public void onItemClick(AdapterView<?> parent, View view,
+                                                int position, long id) {
+                            toasterNotif("Clic sur un objet");
+                            pwindo.dismiss();
+                        }
+                    });
+
+                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT, true);
+                    pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
