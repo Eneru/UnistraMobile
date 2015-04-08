@@ -1,10 +1,12 @@
 package com.mobile.unistra.unistramobile;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -40,9 +42,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
@@ -55,6 +59,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     EditText txtSemaines;
     private PopupWindow pwindo;
     public LocalCal agendaLocal;
+    boolean doubleBackToExitPressedOnce;
 
     //private MyCalendar m_calendars[];
     String calendriers[];
@@ -65,6 +70,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
+        doubleBackToExitPressedOnce=false;
         panneauDeBase = (FrameLayout) findViewById( R.id.panneauDeBase);
         panneauDeBase.getForeground().setAlpha( 0);
 
@@ -136,6 +142,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
+                    sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -158,6 +165,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
                     colorCalendrier();
+                    sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 }
             }
         });
@@ -202,6 +210,30 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 fOut.close();
             } catch (IOException e) {
                 Toast.makeText(context, "Ressource non sauvegardée",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
+     */
+    public void sauvegarderCalendrier(Context context, String data){
+        FileOutputStream fOut = null;
+        OutputStreamWriter osw = null;
+
+        try{
+            fOut = context.openFileOutput("calendrier.csv",MODE_PRIVATE);//MODE_APPEND);
+            osw = new OutputStreamWriter(fOut);
+            osw.write(data);
+            osw.flush();
+        }
+        catch (Exception e) {
+        }
+        finally {
+            try {
+                osw.close();
+                fOut.close();
+            } catch (IOException e) {
             }
         }
     }
@@ -297,10 +329,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     /**
      * Ce qu'il se passe quand on appuie sur un élément de la liste déroulante
-     * @param parent
-     * @param view
-     * @param pos
-     * @param id
      */
     public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
         selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
@@ -336,19 +364,33 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         // TODO Auto-generated method stub
     }
 
+    /**
+     * Ouvre une boîte de dialogue affichant les jours trouvés au jour cliqué par l'utilisateur
+     * @param date La date cliquée
+     */
     private void initiatePopupWindow(Date date) {
         if(calendrier != null) {
+            //On convertit la date en GregorianCalendar, car Date est deprecated
             GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
             dateVoulue.setTime(date);
-            String[] listeAAfficher = calendrier.listEventString(dateVoulue);
+
+            //On met le tout sous forme de String[] pour pouvoir le mettre dans une liste.
+            final ArrayList<Event> eventsDuJour = calendrier.listeEventsJour(dateVoulue);
+            final String[] listeAAfficher = calendrier.listEventString(eventsDuJour);
+
+            //Si la date contient effectivement des événements, on les affiche
             if(listeAAfficher.length >0) {
                 try {
+                    //Initialisations pour la fenêtre popup
                     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View layout = inflater.inflate(R.layout.popup, null);
                     ListView listView = (ListView) layout.findViewById(R.id.listView);
                     TextView titrePopup = (TextView) layout.findViewById(R.id.titrePopup);
-                    titrePopup.setText(dateVoulue.get(GregorianCalendar.DAY_OF_MONTH) + "/" + (dateVoulue.get(GregorianCalendar.MONTH)+1)+"/"+dateVoulue.get(GregorianCalendar.YEAR));
+                    titrePopup.setText(dateVoulue.get(GregorianCalendar.DAY_OF_MONTH) + "/"
+                            + (dateVoulue.get(GregorianCalendar.MONTH)+1)+"/"
+                            + dateVoulue.get(GregorianCalendar.YEAR));
 
+                    //Formation de la liste
                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                             R.layout.support_simple_spinner_dropdown_item, listeAAfficher);
                     listView.setBackgroundColor(getResources().getColor(R.color.caldroid_holo_blue_light));
@@ -356,22 +398,48 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     listView.setOnItemClickListener(new OnItemClickListener() {
                         public void onItemClick(AdapterView<?> parent, View view,
                                                 int position, long id) {
-                            toasterNotif("Clic sur un objet");
+
+                            if(eventsDuJour.get((int) id).invertAlarme())
+                                view.setBackgroundColor(getResources().getColor(R.color.red));
+                            else
+                                view.setBackgroundColor(getResources().getColor(R.color.caldroid_holo_blue_light));
+                        }
+                    });
+
+                    //Création et positionnement de la fenêtre popup
+                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+                    pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+                    //Bouton OK
+                    Button btnOk = (Button) layout.findViewById(R.id.Accepter);
+                    btnOk.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //Sauvegarde, puis quitter
                             pwindo.dismiss();
                         }
                     });
 
-                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-                    pwindo.setBackgroundDrawable(new BitmapDrawable());
-                    pwindo.setOutsideTouchable(true);
-                    pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+                    //Bouton Annuler
+                    Button btnAnnuler = (Button) layout.findViewById(R.id.Annuler);
+                    btnAnnuler.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            pwindo.dismiss();
+                        }
+                    });
+
+                    //On noircit l'arrière plan (en rendant opaque la plaque noire en premier plan de celui-ci)
+                    panneauDeBase.getForeground().setAlpha( 200);
+
+                    //Actions lorsque la fenêtre "popup" disparaît
                     pwindo.setOnDismissListener(new PopupWindow.OnDismissListener() {
                         @Override
                         public void onDismiss() {
+                            //On retire le noircissement du fond
                             panneauDeBase.getForeground().setAlpha(0);
                         }
                     });
-                    panneauDeBase.getForeground().setAlpha( 200);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

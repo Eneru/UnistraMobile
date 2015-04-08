@@ -12,6 +12,7 @@ public class Event {
     String salle;
     String description;
     public boolean doublon;
+    public boolean alarme;
 
     public Event(String titreCours, String dateDebut, String dateFin){
         this("",titreCours, "","",new Date(Long.parseLong(dateDebut)), new Date(Long.parseLong(dateFin)));
@@ -24,7 +25,7 @@ public class Event {
         this.description = description;
         this.dateDebut =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
         this.dateFin = new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
-
+        this.alarme = false;
 
         this.dateDebut.setTime(dateDebut);
         this.dateFin.setTime(dateFin);
@@ -54,7 +55,11 @@ public class Event {
         return doublon;
     }
 
+
     public void setDoublon(boolean etat){this.doublon = etat;}
+    public boolean getAlarme(){return alarme;}
+    public void setAlarme(boolean etat){this.alarme = etat;}
+    public boolean invertAlarme(){this.alarme = !this.alarme;return this.alarme;}
 
     public boolean equals(Event aTester){
         if((this.titreCours.equals(aTester.titreCours)) &&

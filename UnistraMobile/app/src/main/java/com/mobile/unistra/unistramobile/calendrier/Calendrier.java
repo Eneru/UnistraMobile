@@ -265,6 +265,16 @@ public class Calendrier extends Wget {
         return retour;
     }
 
+    public String[] listEventString(ArrayList<Event> eventsDuJour){
+        String[] retour = new String[eventsDuJour.size()];
+        int i=0;
+        for(Event e:eventsDuJour){
+            retour[i] = e.toString();
+            i++;
+        }
+        return retour;
+    }
+
     /**
      * Appelle le constructeur de <b>Event</b> avec comme paramètre les méthodes de parsage correspondants aux champs.
      * @param entree <b>String</b> représentant un événement au format brut.

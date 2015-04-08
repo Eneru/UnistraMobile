@@ -52,9 +52,8 @@ public class LocalCal {
                     values.put(CalendarContract.Events.EVENT_LOCATION, event.getLieu());
                     TimeZone timeZone = event.getDebut().getTimeZone();
                     values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
-
-                    // default calendar
                     values.put(CalendarContract.Events.CALENDAR_ID, selectedCalendarId);
+                    values.put(CalendarContract.Events.HAS_ALARM, event.getAlarme()?1:0);
 
                     //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
                     //        + dtUntill);
@@ -102,13 +101,35 @@ public class LocalCal {
         return data;
     }
 
+    public String chargerCalendrier(Context context){
+        FileInputStream fIn = null;
+        InputStreamReader isr = null;
+
+        char[] inputBuffer = new char[255];
+        String data = "";
+
+        try{
+            fIn = context.openFileInput("calendrier.csv");
+            isr = new InputStreamReader(fIn);
+            isr.read(inputBuffer);
+            data = new String(inputBuffer);
+            int lastInt = Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(
+                            data.lastIndexOf('0'),data.lastIndexOf('1')),data.lastIndexOf('2')),data.lastIndexOf('3')),data.lastIndexOf('4')),
+                    data.lastIndexOf('5')),data.lastIndexOf('6')),data.lastIndexOf('7')),data.lastIndexOf('8')),data.lastIndexOf('9'));
+            data = data.substring(0,lastInt+1);
+        }catch (Exception e) {
+            Log.e("chargerCalendrier", "Le calendrier par défaut n'a pas pu être chargé");
+        }
+        return data;
+    }
+
     /**
      * Constructeur à utiliser pour la synchronisation uniquement !
      * <br>Il envoit directement la requête pour récupérer le calendrier "favori" sur l'agenda par défaut du téléphone, après vérification des doublons.
      * @param activity Activité appelante ; indispensable pour les "appels système"
      */
     public LocalCal(Activity activity) {
-        this(activity, "1");
+        this(activity, "1"); //On devra enregistrer le dernier calendrier utilisé, aussi
         Calendrier calendrier = new Calendrier(this.ressource, "4");
         comparerAgendaEvent(calendrier);
         exportAgenda(activity, calendrier);
@@ -121,7 +142,9 @@ public class LocalCal {
      */
     public LocalCal(Activity activity, String selectedCalendarId) {
         this.ressource = chargerRessources(activity);
-        this.selectedCalendarId = selectedCalendarId ;
+        this.selectedCalendarId = chargerCalendrier(activity) ;
+        if(this.selectedCalendarId.equals(""))
+            this.selectedCalendarId = selectedCalendarId;
         Uri l_eventUri;
         agendaLocal = new ArrayList<Event>();
 
