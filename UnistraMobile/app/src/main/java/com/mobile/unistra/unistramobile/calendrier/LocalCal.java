@@ -170,7 +170,8 @@ public class LocalCal {
             String l_title;
             int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
             int l_colBegin = l_managedCursor.getColumnIndex(l_projection[1]);
-            int l_colEnd = l_managedCursor.getColumnIndex(l_projection[1]);
+            int l_colEnd = l_managedCursor.getColumnIndex(l_projection[2]);
+
             do {
                 l_title = l_managedCursor.getString(l_colTitle);
                 agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));

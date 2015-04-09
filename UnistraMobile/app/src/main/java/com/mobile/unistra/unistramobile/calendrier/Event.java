@@ -15,7 +15,25 @@ public class Event {
     public boolean alarme;
 
     public Event(String titreCours, String dateDebut, String dateFin){
-        this("",titreCours, "","",new Date(Long.parseLong(dateDebut)), new Date(Long.parseLong(dateFin)));
+        this.titreCours = titreCours;
+        this.salle = "";
+        this.uid = "";
+        this.description = "";
+        this.dateDebut =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+        this.dateFin = new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+        this.alarme = false;
+
+        Date dtDebut = new Date(Long.parseLong(dateDebut));
+        Date dtFin;
+        try{
+            dtFin = new Date(Long.parseLong(dateFin));
+        }catch(Exception e){
+            dtFin = dtDebut;
+        }
+        this.dateDebut.setTime(dtDebut);
+        this.dateFin.setTime(dtFin);
+
+        this.doublon = false;
     }
 
     public Event(String uid, String titreCours, String salle, String description, Date dateDebut, Date dateFin){
@@ -63,8 +81,8 @@ public class Event {
 
     public boolean equals(Event aTester){
         if((this.titreCours.equals(aTester.titreCours)) &&
-                (this.getDebut().equals(aTester.getDebut())))// &&
-                //(this.getFin().equals(aTester.getFin())))
+                (this.getDebut().equals(aTester.getDebut())) &&
+                (this.getFin().equals(aTester.getFin())))
             return true;
         else return false;
     }

@@ -454,7 +454,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             swipelistview.setOffsetLeft(convertDpToPixel(260f)); // left side offset
             swipelistview.setOffsetRight(convertDpToPixel(0f)); // right side offset
             swipelistview.setAnimationTime(50); // animarion time
-            swipelistview.setSwipeOpenOnLongPress(true); // enable or disable SwipeOpenOnLongPress
+            swipelistview.setSwipeOpenOnLongPress(false); // enable or disable SwipeOpenOnLongPress
 
             swipelistview.setAdapter(adapter);
 
