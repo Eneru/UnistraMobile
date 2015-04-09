@@ -83,4 +83,19 @@ public class Event {
                 + heureFin +"h"+minutesFin + " : "
                 + this.titreCours;
     }
+
+    public String hourToString(){
+        String heureFin = String.valueOf(this.getHeureFin());
+        //if(this.getHeureFin() < 10) heureFin = " " + heureFin;
+        String heureDebut = String.valueOf(this.getHeureDebut());
+        if((this.getHeureFin() > 9)&&(this.getHeureDebut() < 10)) heureDebut = " " + heureDebut;
+
+        String minutesDebut = String.valueOf(this.getMinuteDebut());
+        if(this.getMinuteDebut() < 10) minutesDebut += "0";
+        String minutesFin = String.valueOf(this.getMinuteFin());
+        if(this.getMinuteFin() < 10) minutesFin += "0";
+
+        return heureDebut +"h"+ minutesDebut +" - "
+                + heureFin +"h"+minutesFin;
+    }
 }

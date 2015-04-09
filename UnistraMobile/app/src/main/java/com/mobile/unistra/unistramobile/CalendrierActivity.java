@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,8 +31,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fortysevendeg.swipelistview.BaseSwipeListViewListener;
+import com.fortysevendeg.swipelistview.SwipeListView;
 import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
+import com.mobile.unistra.unistramobile.calendrier.EventAdapter;
 import com.mobile.unistra.unistramobile.calendrier.LocalCal;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
@@ -59,22 +63,20 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     EditText txtSemaines;
     private PopupWindow pwindo;
     public LocalCal agendaLocal;
-    boolean doubleBackToExitPressedOnce;
+    SwipeListView swipelistview;
+    EventAdapter adapter;
 
-    //private MyCalendar m_calendars[];
     String calendriers[];
-    String selectedCalendarId = "1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
 
-        doubleBackToExitPressedOnce=false;
         panneauDeBase = (FrameLayout) findViewById( R.id.panneauDeBase);
         panneauDeBase.getForeground().setAlpha( 0);
 
-        agendaLocal = new LocalCal(this, selectedCalendarId);
+        agendaLocal = new LocalCal(this);
 
         getCalendar(this);
 
@@ -84,7 +86,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
+
+        agendaLocal.getSelectedCalendarId();
+        spinner.setSelection(Integer.parseInt(agendaLocal.getSelectedCalendarId())-1);
 
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
@@ -328,13 +332,11 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     }
 
     /**
-     * Ce qu'il se passe quand on appuie sur un élément de la liste déroulante
+     * Ce qu'il se passe quand on appuie sur un élément de la liste de calendriers
      */
     public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-        selectedCalendarId = String.valueOf(spinner.getSelectedItemId() + 1);
-
         // Chargement du calendrier local
-        agendaLocal = new LocalCal(this, selectedCalendarId);
+        agendaLocal = new LocalCal(this, String.valueOf(spinner.getSelectedItemId() + 1));
 
         caldroidFragment = new CaldroidFragment();
         Bundle args = new Bundle();
@@ -359,91 +361,147 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             colorCalendrier();
         }
     }
+
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
     }
 
-    /**
-     * Ouvre une boîte de dialogue affichant les jours trouvés au jour cliqué par l'utilisateur
-     * @param date La date cliquée
-     */
+    public int convertDpToPixel(float dp) {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float px = dp * (metrics.densityDpi / 160f);
+        return (int) px;
+    }
+
+
     private void initiatePopupWindow(Date date) {
-        if(calendrier != null) {
-            //On convertit la date en GregorianCalendar, car Date est deprecated
-            GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
-            dateVoulue.setTime(date);
+        //On convertit la date en GregorianCalendar, car Date est deprecated
+        GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+        dateVoulue.setTime(date);
 
-            //On met le tout sous forme de String[] pour pouvoir le mettre dans une liste.
-            final ArrayList<Event> eventsDuJour = calendrier.listeEventsJour(dateVoulue);
-            final String[] listeAAfficher = calendrier.listEventString(eventsDuJour);
+        //On met le tout sous forme de String[] pour pouvoir le mettre dans une liste.
+        final ArrayList<Event> eventsDuJour;
+        if(calendrier != null)
+            eventsDuJour = calendrier.listeEventsJour(dateVoulue);
+        else
+            eventsDuJour = agendaLocal.listeEventsJour(dateVoulue);
 
-            //Si la date contient effectivement des événements, on les affiche
-            if(listeAAfficher.length >0) {
-                try {
-                    //Initialisations pour la fenêtre popup
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    View layout = inflater.inflate(R.layout.popup, null);
-                    ListView listView = (ListView) layout.findViewById(R.id.listView);
-                    TextView titrePopup = (TextView) layout.findViewById(R.id.titrePopup);
-                    titrePopup.setText(dateVoulue.get(GregorianCalendar.DAY_OF_MONTH) + "/"
-                            + (dateVoulue.get(GregorianCalendar.MONTH)+1)+"/"
-                            + dateVoulue.get(GregorianCalendar.YEAR));
+        //Si la date contient effectivement des événements, on les affiche
+        if(eventsDuJour.size() >0) {
+            //Initialisations pour la fenêtre popup
+            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.swipelist, null);
 
-                    //Formation de la liste
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                            R.layout.support_simple_spinner_dropdown_item, listeAAfficher);
-                    listView.setBackgroundColor(getResources().getColor(R.color.caldroid_holo_blue_light));
-                    listView.setAdapter(adapter);
-                    listView.setOnItemClickListener(new OnItemClickListener() {
-                        public void onItemClick(AdapterView<?> parent, View view,
-                                                int position, long id) {
+            //Formation de la liste
+            swipelistview = (SwipeListView) layout.findViewById(R.id.example_swipe_lv_list);
+            adapter=new EventAdapter(this,R.layout.custom_row,eventsDuJour);
 
-                            if(eventsDuJour.get((int) id).invertAlarme())
-                                view.setBackgroundColor(getResources().getColor(R.color.red));
-                            else
-                                view.setBackgroundColor(getResources().getColor(R.color.caldroid_holo_blue_light));
-                        }
-                    });
 
-                    //Création et positionnement de la fenêtre popup
-                    pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-                    pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-                    //Bouton OK
-                    Button btnOk = (Button) layout.findViewById(R.id.Accepter);
-                    btnOk.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            //Sauvegarde, puis quitter
-                            pwindo.dismiss();
-                        }
-                    });
-
-                    //Bouton Annuler
-                    Button btnAnnuler = (Button) layout.findViewById(R.id.Annuler);
-                    btnAnnuler.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            pwindo.dismiss();
-                        }
-                    });
-
-                    //On noircit l'arrière plan (en rendant opaque la plaque noire en premier plan de celui-ci)
-                    panneauDeBase.getForeground().setAlpha( 200);
-
-                    //Actions lorsque la fenêtre "popup" disparaît
-                    pwindo.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                        @Override
-                        public void onDismiss() {
-                            //On retire le noircissement du fond
-                            panneauDeBase.getForeground().setAlpha(0);
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
+            //Formation de la swipeList avec les Listeners
+            swipelistview.setSwipeListViewListener(new BaseSwipeListViewListener() {
+                @Override
+                public void onOpened(int position, boolean toRight) {
                 }
-            }
+
+                @Override
+                public void onClosed(int position, boolean fromRight) {
+                }
+
+                @Override
+                public void onListChanged() {
+                }
+
+                @Override
+                public void onMove(int position, float x) {
+                }
+
+                @Override
+                public void onStartOpen(int position, int action, boolean right) {
+                    //Log.d("swipe", String.format("onStartOpen %d - action %d", position, action));
+                }
+
+                @Override
+                public void onStartClose(int position, boolean right) {
+                    //Log.d("swipe", String.format("onStartClose %d", position));
+                }
+
+                @Override
+                public void onClickFrontView(int position) {
+                    //Log.d("swipe", String.format("onClickFrontView %d", position));
+
+                    //swipelistview.openAnimate(position); //when you touch front view it will open
+                }
+
+                @Override
+                public void onClickBackView(int position) {
+                    Log.d("swipe", String.format("onClickBackView %d", position));
+                    swipelistview.closeAnimate(position);//when you touch back view it will close
+                }
+
+                @Override
+                public void onDismiss(int[] reverseSortedPositions) {
+                    eventsDuJour.remove(reverseSortedPositions[0]);
+                    adapter.notifyDataSetChanged();
+                }
+
+            });
+
+            //These are the swipe listview settings. you can change these
+            //setting as your requrement
+            swipelistview.setSwipeMode(SwipeListView.SWIPE_MODE_BOTH);
+            swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_DISMISS);//.SWIPE_ACTION_REVEAL); //there are four swipe actions
+            swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_DISMISS);//SWIPE_ACTION_REVEAL);
+            swipelistview.setOffsetLeft(convertDpToPixel(260f)); // left side offset
+            swipelistview.setOffsetRight(convertDpToPixel(0f)); // right side offset
+            swipelistview.setAnimationTime(50); // animarion time
+            swipelistview.setSwipeOpenOnLongPress(true); // enable or disable SwipeOpenOnLongPress
+
+            swipelistview.setAdapter(adapter);
+
+            adapter.notifyDataSetChanged();
+
+
+            //Titre de la liste
+            TextView dateEvent= (TextView) layout.findViewById(R.id.dateEvent);
+            dateEvent.setText(dateVoulue.get(GregorianCalendar.DAY_OF_MONTH) + "/"
+                    + (dateVoulue.get(GregorianCalendar.MONTH)+1)+"/"
+                    + dateVoulue.get(GregorianCalendar.YEAR));
+
+            //Bouton OK
+            Button btnOk = (Button) layout.findViewById(R.id.buttonAccepter);
+            btnOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //Sauvegarde, puis quitter
+                    pwindo.dismiss();
+                }
+            });
+
+            //Bouton Annuler
+            Button btnAnnuler = (Button) layout.findViewById(R.id.buttonAnnuler);
+            btnAnnuler.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    pwindo.dismiss();
+                }
+            });
+
+            //Création et positionnement de la fenêtre popup
+            pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+
+            //On noircit l'arrière plan (en rendant opaque la plaque noire en premier plan de celui-ci)
+            panneauDeBase.getForeground().setAlpha( 200);
+
+            //Actions lorsque la fenêtre "popup" disparaît
+            pwindo.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    //On retire le noircissement du fond
+                    panneauDeBase.getForeground().setAlpha(0);
+                }
+            });
         }
     }
 }

@@ -11,11 +11,6 @@
     android:background="#ffffff"
     android:foreground="@drawable/dim">
 
-
-
-
-
-
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">

@@ -13,6 +13,8 @@ import android.util.Log;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
@@ -78,6 +80,7 @@ public class LocalCal {
         }
     }
 
+    public String getSelectedCalendarId(){return this.selectedCalendarId;}
 
     public String chargerRessources(Context context){
         FileInputStream fIn = null;
@@ -129,8 +132,8 @@ public class LocalCal {
      * @param activity Activité appelante ; indispensable pour les "appels système"
      */
     public LocalCal(Activity activity) {
-        this(activity, "1"); //On devra enregistrer le dernier calendrier utilisé, aussi
-        Calendrier calendrier = new Calendrier(this.ressource, "4");
+        this(activity, ""); //On devra enregistrer le dernier calendrier utilisé, aussi
+        Calendrier calendrier = new Calendrier(this.ressource, "4"); //Ressource demandée, 4 semaines
         comparerAgendaEvent(calendrier);
         exportAgenda(activity, calendrier);
     }
@@ -142,9 +145,17 @@ public class LocalCal {
      */
     public LocalCal(Activity activity, String selectedCalendarId) {
         this.ressource = chargerRessources(activity);
-        this.selectedCalendarId = chargerCalendrier(activity) ;
-        if(this.selectedCalendarId.equals(""))
+        if(!selectedCalendarId.equals(""))
+            //Si on spécifie un identifiant de calendrier, alors on le met
             this.selectedCalendarId = selectedCalendarId;
+        else {
+            //Sinon on vérifie qu'on en a pas un dans les préférences
+            this.selectedCalendarId = chargerCalendrier(activity);
+            //Si on avait pas de préférence, alors on prend le default Cal
+            if (this.selectedCalendarId.equals(""))
+                this.selectedCalendarId = "1";
+        }
+
         Uri l_eventUri;
         agendaLocal = new ArrayList<Event>();
 
@@ -165,5 +176,15 @@ public class LocalCal {
                 agendaLocal.add(new Event(l_title,l_managedCursor.getString(l_colBegin),l_managedCursor.getString(l_colEnd)));
             } while (l_managedCursor.moveToNext());
         }
+    }
+
+    public ArrayList<Event> listeEventsJour(GregorianCalendar date){
+        ArrayList<Event> liste = new ArrayList<Event>();
+
+        for(Event e: this.agendaLocal) {
+            if(date.get(Calendar.DAY_OF_YEAR) == e.dateDebut.get(Calendar.DAY_OF_YEAR))
+                liste.add(e);
+        }
+        return liste;
     }
 }
