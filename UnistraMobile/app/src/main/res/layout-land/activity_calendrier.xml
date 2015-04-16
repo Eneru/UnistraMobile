@@ -9,7 +9,7 @@
     android:id="@+id/panneauDeBase"
     tools:context="com.mobile.unistra.unistramobile.CalendrierActivity"
     android:background="#ffffff"
-    android:screenOrientation="portrait"
+    android:screenOrientation="landscape"
     android:foreground="@drawable/dim">
 
     <RelativeLayout

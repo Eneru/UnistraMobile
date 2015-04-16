@@ -76,7 +76,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         panneauDeBase = (FrameLayout) findViewById( R.id.panneauDeBase);
         panneauDeBase.getForeground().setAlpha( 0);
 
-        agendaLocal = new LocalCal(this);
+        agendaLocal = new LocalCal(this,"");
 
         getCalendar(this);
 
@@ -97,13 +97,17 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         // Initialisation du widget Caldroid
         caldroidFragment = new CaldroidFragment();
-        Bundle args = new Bundle();
-        Calendar cal = Calendar.getInstance();
-        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
-        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
-        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
-        caldroidFragment.setArguments(args);
-
+        if (savedInstanceState != null) {
+            caldroidFragment.restoreStatesFromKey(savedInstanceState,
+                    "CALDROID_SAVED_STATE");
+        }else {
+            Bundle args = new Bundle();
+            Calendar cal = Calendar.getInstance();
+            args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
+            args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
+            args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
+            caldroidFragment.setArguments(args);
+    }
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
@@ -114,17 +118,20 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         listener = new CaldroidListener() {
             @Override
             public void onSelectDate(Date date, View view) {
-                toasterNotif("Clic sur la date");
+                //toasterNotif("Clic sur la date");
                 initiatePopupWindow(date);
             }
+
             @Override
             public void onChangeMonth(int month, int year) {
             }
+
             @Override
             public void onLongClickDate(Date date, View view) {
-                toasterNotif("Clic long");
+                //toasterNotif("Clic long");
                 // On proposera de supprimer la date donnée ?
             }
+
             @Override
             public void onCaldroidViewCreated() {
             }
@@ -146,7 +153,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 try {
                     calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
-                    sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
+                    LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -169,7 +176,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
                     colorCalendrier();
-                    sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
+                    LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 }
             }
         });
@@ -193,7 +200,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     /**
      * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
      */
-    public void sauvegarderRessources(Context context, String data){
+    public static void sauvegarderRessources(Context context, String data){
         FileOutputStream fOut = null;
         OutputStreamWriter osw = null;
 
@@ -218,29 +225,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         }
     }
 
-    /**
-     * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
-     */
-    public void sauvegarderCalendrier(Context context, String data){
-        FileOutputStream fOut = null;
-        OutputStreamWriter osw = null;
 
-        try{
-            fOut = context.openFileOutput("calendrier.csv",MODE_PRIVATE);//MODE_APPEND);
-            osw = new OutputStreamWriter(fOut);
-            osw.write(data);
-            osw.flush();
-        }
-        catch (Exception e) {
-        }
-        finally {
-            try {
-                osw.close();
-                fOut.close();
-            } catch (IOException e) {
-            }
-        }
-    }
 
     /**
      * Charge les ressources du fichier sur le téléphone.
@@ -502,6 +487,16 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     panneauDeBase.getForeground().setAlpha(0);
                 }
             });
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // TODO Auto-generated method stub
+        super.onSaveInstanceState(outState);
+
+        if (caldroidFragment != null) {
+            caldroidFragment.saveStatesToKey(outState, "CALDROID_SAVED_STATE");
         }
     }
 }

@@ -11,7 +11,10 @@ import android.provider.CalendarContract;
 import android.util.Log;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -103,7 +106,29 @@ public class LocalCal {
         }
         return data;
     }
+    /**
+     * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
+     */
+    public static void sauvegarderCalendrier(Context context, String data){
+        FileOutputStream fOut = null;
+        OutputStreamWriter osw = null;
 
+        try{
+            fOut = context.openFileOutput("calendrier.csv",context.MODE_PRIVATE);//MODE_APPEND);
+            osw = new OutputStreamWriter(fOut);
+            osw.write(data);
+            osw.flush();
+        }
+        catch (Exception e) {
+        }
+        finally {
+            try {
+                osw.close();
+                fOut.close();
+            } catch (IOException e) {
+            }
+        }
+    }
     public String chargerCalendrier(Context context){
         FileInputStream fIn = null;
         InputStreamReader isr = null;
