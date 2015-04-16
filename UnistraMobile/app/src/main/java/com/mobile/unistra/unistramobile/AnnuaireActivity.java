@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mobile.unistra.unistramobile.annuaire.Annuaire;
 import com.mobile.unistra.unistramobile.annuaire.NoResultException;
@@ -42,6 +45,9 @@ public class AnnuaireActivity extends ActionBarActivity {
     private LinearLayout layout;
     private EditText editText;
 
+    private CountDownTimer short_countDownTimer;
+    private CountDownTimer long_countDownTimer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +63,30 @@ public class AnnuaireActivity extends ActionBarActivity {
         listView = (ListView)findViewById(R.id.list_recherche);
         listView.setAdapter(adapter);
         layout = (LinearLayout)findViewById(R.id.progressbar_view);
+        long_countDownTimer=new CountDownTimer(2500,2500) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                new Task().execute();
+            }
+        };
+
+        short_countDownTimer=new CountDownTimer(1500,1500) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                new Task().execute();
+            }
+        };
+
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -65,12 +95,32 @@ public class AnnuaireActivity extends ActionBarActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length()>=4)
+
+                if (s.length()>4) // Si le texte fait plus de 4 lettres on utilise que le timer court
                 {
-                    new Task().execute();
+                    short_countDownTimer.cancel();
+                    short_countDownTimer.start();
                 }
-                else
+                else if (s.length()==4) // Si le texte fait 4 lettres on annule le timer long et on restart le court
                 {
+                    long_countDownTimer.cancel();
+                    short_countDownTimer.cancel();
+                    short_countDownTimer.start();
+                }
+                else if (s.length()==3) // Si le texte fait 3 lettres on annule le timer court et on restart le long
+                {
+                    short_countDownTimer.cancel();
+                    long_countDownTimer.cancel();
+                    long_countDownTimer.start();
+                }
+                else if (s.length()>0) // Si le texte n'est pas null on restart le timer long
+                {
+                    long_countDownTimer.cancel();
+                    long_countDownTimer.start();
+                }
+                else // Si le texte est null on efface tout et on arrete le timer
+                {
+                    long_countDownTimer.cancel();
                     prefix = null;
                     adapter.clear();
                 }
@@ -86,24 +136,44 @@ public class AnnuaireActivity extends ActionBarActivity {
     class Task extends AsyncTask<String, Integer, Boolean> {
         @Override
         protected void onPreExecute() {
-            layout.setVisibility(View.VISIBLE);
-            listView.setVisibility(View.GONE);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    layout.setVisibility(View.VISIBLE);
+                    listView.setVisibility(View.GONE);
+                    prefix = editText.getText().toString();
+                    editText.setEnabled(false);
+                }
+            });
             super.onPreExecute();
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
-            layout.setVisibility(View.GONE);
-            listView.setVisibility(View.VISIBLE);
-            adapter.notifyDataSetChanged();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    layout.setVisibility(View.GONE);
+                    listView.setVisibility(View.VISIBLE);
+                    editText.setEnabled(true);
+                    adapter.notifyDataSetChanged();
+                }
+            });
             super.onPostExecute(result);
         }
 
         @Override
         protected Boolean doInBackground(String... params) {
             try {
-                adapter.clear();
-                prefix = editText.getText().toString();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                        adapter.clear();
+                    }
+                });
                 try
                 {
                     String[] recherche = prefix.split(" ");
@@ -113,9 +183,17 @@ public class AnnuaireActivity extends ActionBarActivity {
                     else
                         annuaire = new Annuaire("",recherche[0],"","","");
                     ArrayList<Prof> profs = annuaire.getAnnuaire();
-                    for (Prof p : profs)
-                        adapter.add
-                                (new AtomContact(p.getIdentite(),p.getTelephone(),p.getMail()));
+                    int i=0;
+                    for (final Prof p : profs) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                adapter.add
+                                        (new AtomContact(p.getIdentite(), p.getTelephone(), p.getMail()));
+                            }
+                        });
+                    }
                 }
                 catch (URISyntaxException e) {
                     e.printStackTrace();
