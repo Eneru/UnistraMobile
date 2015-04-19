@@ -236,7 +236,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         InputStreamReader isr = null;
 
         char[] inputBuffer = new char[255];
-        String data = null;
+        String data = "";
 
         try{
             fIn = context.openFileInput("ressources.csv");
