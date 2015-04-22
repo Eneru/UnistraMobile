@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -168,7 +169,7 @@ public class LocalCal {
      * @param activity
      * @param selectedCalendarId
      */
-    public LocalCal(Activity activity, String selectedCalendarId) {
+    public LocalCal(Context activity, String selectedCalendarId) {
         this.ressource = chargerRessources(activity);
         if(!selectedCalendarId.equals(""))
             //Si on spécifie un identifiant de calendrier, alors on le met
@@ -190,7 +191,9 @@ public class LocalCal {
             l_eventUri = Uri.parse("content://calendar/events");
         }
         String[] l_projection = new String[]{"title", "dtstart", "dtend"};
-        Cursor l_managedCursor = activity.managedQuery(l_eventUri, l_projection, "calendar_id=" + this.selectedCalendarId, null, "dtstart ASC, dtend ASC");
+
+       CursorLoader cur = new CursorLoader(activity,l_eventUri, l_projection, "calendar_id=" + this.selectedCalendarId, null, "dtstart ASC, dtend ASC");
+        Cursor l_managedCursor = cur.loadInBackground();
         if (l_managedCursor.moveToFirst()){
             String l_title;
             int l_colTitle = l_managedCursor.getColumnIndex(l_projection[0]);
