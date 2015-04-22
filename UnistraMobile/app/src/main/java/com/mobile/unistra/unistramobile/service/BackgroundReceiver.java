@@ -88,7 +88,7 @@ public class BackgroundReceiver extends WakefulBroadcastReceiver
                 PackageManager.DONT_KILL_APP);
     }
     // END_INCLUDE(set_alarm)
-    public void cancelUpdateCal(Context context) {
+    public void setCancelUpdateCal(Context context) {
         // If the alarm has been set, cancel it.
         if (alarmMgr!= null) {
             alarmMgr.cancel(alarmIntent);
