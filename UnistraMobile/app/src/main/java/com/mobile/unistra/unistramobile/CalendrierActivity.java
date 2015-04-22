@@ -58,9 +58,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
+    Spinner choixSemaines;
     public Calendrier calendrier;
     EditText txtRessource;
-    EditText txtSemaines;
     private PopupWindow pwindo;
     public LocalCal agendaLocal;
     SwipeListView swipelistview;
@@ -92,7 +92,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         // Initialisation des widgets
         txtRessource= (EditText) findViewById(R.id.ressourceEditText);
-        txtSemaines= (EditText) findViewById(R.id.weekEditText);
+        choixSemaines= (Spinner) findViewById(R.id.weekSpinner);
+        Integer[] items = new Integer[]{1,2,3,4,5,6};
+        ArrayAdapter<Integer> adaptSpinner = new ArrayAdapter<Integer>(this,android.R.layout.simple_spinner_item, items);
+        choixSemaines.setAdapter(adaptSpinner);
 
 
         // Initialisation du widget Caldroid
@@ -151,7 +154,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onClick(View view) {
                 try {
-                    calendrier = new Calendrier(txtRessource.getText().toString(),txtSemaines.getText().toString());
+                    calendrier = new Calendrier(txtRessource.getText().toString(),String.valueOf((int) choixSemaines.getSelectedItem()));
+                    Log.e("Valeur du Spinner",String.valueOf((int) choixSemaines.getSelectedItem()));
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
                     LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 } catch (Exception e) {
