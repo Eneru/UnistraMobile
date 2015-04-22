@@ -46,18 +46,15 @@
             android:layout_alignParentStart="true"
             android:layout_marginTop="60dp" />
 
-        <EditText
+        <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:text="1"
-            android:ems="10"
-            android:id="@+id/weekEditText"
+            android:id="@+id/weekSpinner"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignLeft="@+id/exportButton"
-            android:layout_alignStart="@+id/exportButton" />
-
+            android:layout_alignStart="@+id/exportButton"
+            android:spinnerMode="dropdown" />
 
 
         <TextView
@@ -75,8 +72,8 @@
             android:text="Semaines :"
             android:id="@+id/labelSemaines"
             android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/weekEditText"
-            android:layout_toStartOf="@+id/weekEditText" />
+            android:layout_toLeftOf="@+id/weekSpinner"
+            android:layout_toStartOf="@+id/weekSpinner" />
 
         <Button
             android:layout_width="wrap_content"
