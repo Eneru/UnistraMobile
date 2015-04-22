@@ -26,7 +26,7 @@ public class UpdateCal extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        //new LocalCal();
+        new LocalCal(this);
     }
 
     private void sendNotification(String msg) {

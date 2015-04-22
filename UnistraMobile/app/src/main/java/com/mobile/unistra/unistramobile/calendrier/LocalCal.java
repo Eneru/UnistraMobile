@@ -157,7 +157,7 @@ public class LocalCal {
      * <br>Il envoit directement la requête pour récupérer le calendrier "favori" sur l'agenda par défaut du téléphone, après vérification des doublons.
      * @param activity Activité appelante ; indispensable pour les "appels système"
      */
-    public LocalCal(Activity activity) {
+    public LocalCal(Context activity) {
         this(activity, ""); //On devra enregistrer le dernier calendrier utilisé, aussi
         Calendrier calendrier = new Calendrier(this.ressource, "4"); //Ressource demandée, 4 semaines
         comparerAgendaEvent(calendrier);
