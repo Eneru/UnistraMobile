@@ -33,6 +33,10 @@ public class LocalCal {
         return agendaLocal;
     }
 
+    public void remove(Event e){
+        agendaLocal.remove(e);
+    }
+
     /**
      * Compare les événements de l'agenda local avec les événements chargés par l'ADE.
      */

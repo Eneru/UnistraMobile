@@ -366,6 +366,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         //On met le tout sous forme de String[] pour pouvoir le mettre dans une liste.
         final ArrayList<Event> eventsDuJour;
+        final ArrayList<Event> aEffacer = new ArrayList<Event>();
         if(calendrier != null)
             eventsDuJour = calendrier.listeEventsJour(dateVoulue);
         else
@@ -425,6 +426,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 @Override
                 public void onDismiss(int[] reverseSortedPositions) {
+                    aEffacer.add(eventsDuJour.get(reverseSortedPositions[0]));
                     eventsDuJour.remove(reverseSortedPositions[0]);
                     adapter.notifyDataSetChanged();
                 }
@@ -458,6 +460,12 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 @Override
                 public void onClick(View v) {
                     //Sauvegarde, puis quitter
+                    if(calendrier != null) {
+                        for (Event e : aEffacer)
+                            calendrier.remove(e);
+                    }else
+                        for(Event e:aEffacer)
+                            agendaLocal.remove(e);
                     pwindo.dismiss();
                 }
             });

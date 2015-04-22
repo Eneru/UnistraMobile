@@ -53,6 +53,9 @@ public class Calendrier extends Wget {
         this.ressources = ressource;
     }
 
+    public void remove(Event e){
+        listeEvents.remove(e);
+    }
     public void refresh(){
         listeEvents = listeEvents();
     }
