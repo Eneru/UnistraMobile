@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.mobile.unistra.unistramobile.R;
 
+import org.w3c.dom.Text;
+
 public class EventAdapter extends ArrayAdapter {
 
     List   data;
@@ -47,6 +49,7 @@ public class EventAdapter extends ArrayAdapter {
             holder = new NewsHolder();
 
             holder.eventName = (TextView)row.findViewById(R.id.example_itemname);
+            holder.salle = (TextView)row.findViewById(R.id.salleEvent);
             //holder.icon=(ImageView)row.findViewById(R.id.example_image);
             holder.horaires = (TextView)row.findViewById(R.id.example_text);
             //holder.button1=(Button)row.findViewById(R.id.swipe_button1);
@@ -59,6 +62,7 @@ public class EventAdapter extends ArrayAdapter {
 
         Event event = (Event) data.get(position);
         holder.eventName.setText(event.getTitre());
+        holder.salle.setText(event.getLieu());
         //holder.icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
         //holder.icon=(ImageView)row.findViewById(R.id.example_image);
         holder.horaires.setText(event.hourToString());
@@ -97,6 +101,7 @@ public class EventAdapter extends ArrayAdapter {
     static class NewsHolder{
 
         TextView eventName;
+        TextView salle;
         //ImageView icon;
         TextView horaires;
         //Button button1;

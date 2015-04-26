@@ -25,15 +25,15 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"/>
 
-        <EditText
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:text="4308"
+            android:text="Ressource"
             android:ems="10"
-            android:id="@+id/ressourceEditText"
+            android:id="@+id/ressourceEditButton"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/labelRessource"
+            android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/labelSemaines"
             android:layout_toStartOf="@+id/labelSemaines" />
 
@@ -56,15 +56,6 @@
             android:layout_alignStart="@+id/exportButton"
             android:spinnerMode="dropdown" />
 
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ressource :"
-            android:id="@+id/labelRessource"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -96,7 +87,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/labelCalendrier"
             android:text="Calendrier :"
-            android:layout_below="@+id/ressourceEditText"
+            android:layout_below="@+id/ressourceEditButton"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
@@ -104,7 +95,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/spinner"
-            android:layout_below="@+id/ressourceEditText"
+            android:layout_below="@+id/ressourceEditButton"
             android:layout_toRightOf="@+id/labelCalendrier"
             android:spinnerMode="dropdown" />
     </RelativeLayout>

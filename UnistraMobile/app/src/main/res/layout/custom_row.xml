@@ -55,6 +55,14 @@
             style="@style/MyListTitle"
             android:id="@+id/example_itemname"/>
 
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/example_itemname"
+            android:layout_toRightOf="@id/example_text"
+            style="@style/MyListTitle"
+            android:id="@+id/salleEvent"/>
+
     </RelativeLayout>
 
 </FrameLayout>

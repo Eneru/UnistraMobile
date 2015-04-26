@@ -1,12 +1,9 @@
 package com.mobile.unistra.unistramobile;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -22,11 +19,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +33,7 @@ import com.mobile.unistra.unistramobile.calendrier.Calendrier;
 import com.mobile.unistra.unistramobile.calendrier.Event;
 import com.mobile.unistra.unistramobile.calendrier.EventAdapter;
 import com.mobile.unistra.unistramobile.calendrier.LocalCal;
+import com.mobile.unistra.unistramobile.calendrier.Ressource;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
 
@@ -54,17 +51,20 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
+    ArrayList<Ressource> listeRessources;
     FrameLayout panneauDeBase;
     CaldroidFragment caldroidFragment;
     CaldroidListener listener;
     Spinner spinner;
     Spinner choixSemaines;
     public Calendrier calendrier;
-    EditText txtRessource;
+    Button btnRessource;
     private PopupWindow pwindo;
     public LocalCal agendaLocal;
     SwipeListView swipelistview;
     EventAdapter adapter;
+    MyCustomAdapter dataAdapter;
+    String ressource="";
 
     String calendriers[];
 
@@ -72,6 +72,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendrier);
+
+        listeRessources = Ressource.getRessourceList();
 
         panneauDeBase = (FrameLayout) findViewById( R.id.panneauDeBase);
         panneauDeBase.getForeground().setAlpha( 0);
@@ -91,7 +93,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         spinner.setSelection(Integer.parseInt(agendaLocal.getSelectedCalendarId())-1);
 
         // Initialisation des widgets
-        txtRessource= (EditText) findViewById(R.id.ressourceEditText);
         choixSemaines= (Spinner) findViewById(R.id.weekSpinner);
         Integer[] items = new Integer[]{1,2,3,4,5,6};
         ArrayAdapter<Integer> adaptSpinner = new ArrayAdapter<Integer>(this,android.R.layout.simple_spinner_item, items);
@@ -145,8 +146,17 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         colorCalendrierLocal();
 
         // Chargement des ressources
-        String ressources = chargerRessources(this);
-        if(!ressources.equals(""))txtRessource.setText(ressources);
+        ressource = chargerRessources(this);
+        if(ressource.equals(""))ressource = "4308";
+
+        //Actions du bouton Ressources
+        btnRessource= (Button) findViewById(R.id.ressourceEditButton);
+        btnRessource.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                displayListView();
+            }
+        });
 
         // Actions du bouton Recherche
         Button btn_search = (Button) findViewById(R.id.button_search);
@@ -154,7 +164,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onClick(View view) {
                 try {
-                    calendrier = new Calendrier(txtRessource.getText().toString(),String.valueOf((int) choixSemaines.getSelectedItem()));
+                    calendrier = new Calendrier(ressource/*txtRessource.getText().toString()*/,String.valueOf((int) choixSemaines.getSelectedItem()));
                     Log.e("Valeur du Spinner",String.valueOf((int) choixSemaines.getSelectedItem()));
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
                     LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
@@ -270,10 +280,12 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         toast.show();
     }
 
+
     /**
      * Colore les événements trouvés
      */
     private void colorCalendrier(){
+
         for(Event e:calendrier.listeEvents){
             if(e.doublon)
                 caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_darker_gray,new Date(e.getDebut().getTimeInMillis()));
@@ -361,7 +373,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         float px = dp * (metrics.densityDpi / 160f);
         return (int) px;
     }
-
 
     private void initiatePopupWindow(Date date) {
         //On convertit la date en GregorianCalendar, car Date est deprecated
@@ -510,5 +521,136 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         if (caldroidFragment != null) {
             caldroidFragment.saveStatesToKey(outState, "CALDROID_SAVED_STATE");
         }
+    }
+
+    private void displayListView() {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.ressource_list, null);
+
+        //Array list of countries
+        final ArrayList<Ressource> ressourceList = listeRessources;
+
+        //create an ArrayAdaptar from the String Array
+        dataAdapter = new MyCustomAdapter(this,
+                R.layout.custom_list, ressourceList);
+        ListView listView = (ListView) layout.findViewById(R.id.listViewRessources);
+        // Assign adapter to ListView
+        listView.setAdapter(dataAdapter);
+
+        listView.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // When clicked, show a toast with the TextView text
+                Ressource res = (Ressource) parent.getItemAtPosition(position);
+                Toast.makeText(getApplicationContext(),
+                        "Clicked on Row: " + res.getName(),
+                        Toast.LENGTH_LONG).show();
+
+            }
+        });
+
+        //Bouton Valider
+        Button btnValider = (Button) layout.findViewById(R.id.btnValider);
+        btnValider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Sauvegarde, puis quitter
+                checkButtonClick();
+                pwindo.dismiss();
+            }
+        });
+
+        //Création et positionnement de la fenêtre popup
+        pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+        //On noircit l'arrière plan (en rendant opaque la plaque noire en premier plan de celui-ci)
+        panneauDeBase.getForeground().setAlpha( 200);
+
+        //Actions lorsque la fenêtre "popup" disparaît
+        pwindo.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                //On retire le noircissement du fond
+                panneauDeBase.getForeground().setAlpha(0);
+            }
+        });
+    }
+
+    private class MyCustomAdapter extends ArrayAdapter<Ressource> {
+        private ArrayList<Ressource> countryList;
+
+        public MyCustomAdapter(Context context, int textViewResourceId,
+                               ArrayList<Ressource> countryList) {
+            super(context, textViewResourceId, countryList);
+            this.countryList = new ArrayList<Ressource>();
+            this.countryList.addAll(countryList);
+        }
+
+        private class ViewHolder {
+            TextView code;
+            CheckBox name;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ViewHolder holder = null;
+            Log.v("ConvertView", String.valueOf(position));
+
+            if (convertView == null) {
+                LayoutInflater vi = (LayoutInflater)getSystemService(
+                        Context.LAYOUT_INFLATER_SERVICE);
+                convertView = vi.inflate(R.layout.custom_list, null);
+
+                holder = new ViewHolder();
+                holder.code = (TextView) convertView.findViewById(R.id.code);
+                holder.name = (CheckBox) convertView.findViewById(R.id.checkBox1);
+                convertView.setTag(holder);
+
+                holder.name.setOnClickListener( new View.OnClickListener() {
+                    public void onClick(View v) {
+                        CheckBox cb = (CheckBox) v ;
+                        Ressource ressource = (Ressource) cb.getTag();
+                        Toast.makeText(getApplicationContext(),
+                                "Clicked on Checkbox: " + cb.getText() +
+                                        " is " + cb.isChecked(),
+                                Toast.LENGTH_LONG).show();
+                        ressource.setSelected(cb.isChecked());
+                    }
+                });
+            }
+            else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            Ressource ressource = countryList.get(position);
+            holder.code.setText(" (" +  ressource.getCode() + ")");
+            holder.name.setText(ressource.getName());
+            holder.name.setChecked(ressource.isSelected());
+            holder.name.setTag(ressource);
+
+            return convertView;
+
+        }
+    }
+
+
+    private void checkButtonClick() {
+         ressource = "";
+
+         ArrayList<Ressource> ressourceList = dataAdapter.countryList;
+         for(int i=0;i<ressourceList.size();i++){
+              Ressource res = ressourceList.get(i);
+              if(res.isSelected()){
+                  if(ressource.equals(""))
+                      ressource = res.getCode();
+                  else
+                      ressource += ","+res.getCode();
+              }
+         }
+
+        Toast.makeText(getApplicationContext(),
+            ressource, Toast.LENGTH_LONG).show();
     }
 }
