@@ -47,6 +47,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
+    TextView selectedRes;
     ArrayList<Ressource> listeRessources;
     FrameLayout panneauDeBase;
     CaldroidFragment caldroidFragment;
@@ -77,6 +78,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         getCalendar(this);
 
+        selectedRes = (TextView) findViewById(R.id.selectedRes);
         spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 R.layout.support_simple_spinner_dropdown_item, calendriers);
@@ -135,8 +137,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         colorCalendrierLocal();
 
         // Chargement des ressources
-        ressource = LocalCal.chargerRessources(this);
-        if(ressource.equals(""))ressource = "4308";
+        //ressource = LocalCal.chargerRessources(this);
+        //if(ressource.equals(""))ressource = "4308";
 
         //Actions du bouton Ressources
         btnRessource= (Button) findViewById(R.id.ressourceEditButton);
@@ -151,25 +153,29 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         Button btn_search = (Button) findViewById(R.id.button_search);
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                try {
-                    if(calendrier!=null){
-                        for(Event e:calendrier.listeEvents)
-                            caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_white,new Date(e.getDebut().getTimeInMillis()));
-                    }
-                    calendrier = new Calendrier(ressource,String.valueOf((int) choixSemaines.getSelectedItem()));
-                    sauvegarderRessources(getBaseContext(), calendrier.getRessources());
-                    LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                if(calendrier != null){
-                    agendaLocal.comparerAgendaEvent(calendrier);
-                    caldroidFragment.refreshView();
+            public void onClick(View view){
+                if (calendrier != null) {
+                    for (Event e : calendrier.listeEvents)
+                        caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_white, new Date(e.getDebut().getTimeInMillis()));
                     colorCalendrierLocal();
-                    colorCalendrierTelecharge();
-                }else toasterNotif("Calendrier introuvable");
+                }
+                if(!ressource.equals("")) {
+                    try {
+
+                        calendrier = new Calendrier(ressource, String.valueOf((int) choixSemaines.getSelectedItem()));
+                        sauvegarderRessources(getBaseContext(), calendrier.getRessources());
+                        LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (calendrier != null) {
+                        agendaLocal.comparerAgendaEvent(calendrier);
+                        colorCalendrierTelecharge();
+                    } else toasterNotif("Calendrier introuvable");
+                }else{
+                    toasterNotif("Veuillez choisir au moins une ressource");
+                }
             }
         });
 
@@ -246,9 +252,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
      */
     private void colorCalendrierTelecharge(){
         for(Event e:calendrier.listeEvents){
-            if(e.doublon)
-                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_darker_gray,new Date(e.getDebut().getTimeInMillis()));
-            else
+            /*if(e.doublon)
+                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
+            else*/
                 caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
@@ -258,7 +264,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
      * Colore les événements trouvés sur l'agenda local
      */
     private void colorCalendrierLocal(){
-        int couleur = R.color.caldroid_gray;
+        //int couleur = R.color.caldroid_gray;
+        int couleur = R.color.caldroid_transparent;
         for(Event event:agendaLocal.getEvents()){
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
@@ -561,10 +568,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     public void onClick(View v) {
                         CheckBox cb = (CheckBox) v ;
                         Ressource ressource = (Ressource) cb.getTag();
-                        Toast.makeText(getApplicationContext(),
-                                "Clicked on Checkbox: " + cb.getText() +
-                                        " is " + cb.isChecked(),
-                                Toast.LENGTH_LONG).show();
                         ressource.setSelected(cb.isChecked());
                     }
                 });
@@ -583,18 +586,21 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     private void checkButtonClick() {
          ressource = "";
-
-         ArrayList<Ressource> ressourceList = dataAdapter.countryList;
-         for(int i=0;i<ressourceList.size();i++){
-              Ressource res = ressourceList.get(i);
-              if(res.isSelected()){
-                  if(ressource.equals(""))
-                      ressource = res.getCode();
-                  else
-                      ressource += ","+res.getCode();
-              }
-         }
-
+        String amettre="";
+        ArrayList<Ressource> ressourceList = dataAdapter.countryList;
+        for(int i=0;i<ressourceList.size();i++){
+             Ressource res = ressourceList.get(i);
+             if(res.isSelected()){
+                 if(ressource.equals("")) {
+                     ressource = res.getCode();
+                     amettre = res.getName();
+                 }else {
+                     ressource += "," + res.getCode();
+                     amettre += ", " + res.getName();
+                 }
+             }
+        }
+        selectedRes.setText(amettre);
         /*Toast.makeText(getApplicationContext(),
             ressource, Toast.LENGTH_LONG).show();*/
     }

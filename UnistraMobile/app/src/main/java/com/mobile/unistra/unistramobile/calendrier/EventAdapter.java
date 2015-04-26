@@ -10,18 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mobile.unistra.unistramobile.R;
 
-import org.w3c.dom.Text;
-
 public class EventAdapter extends ArrayAdapter {
-
-    List   data;
+    List data;
     Context context;
     int layoutResID;
 
@@ -31,8 +25,6 @@ public class EventAdapter extends ArrayAdapter {
         this.data=data;
         this.context=context;
         this.layoutResID=layoutResourceId;
-
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -62,7 +54,10 @@ public class EventAdapter extends ArrayAdapter {
 
         Event event = (Event) data.get(position);
         holder.eventName.setText(event.getTitre());
-        holder.salle.setText(event.getLieu());
+        if(event.estDoublon())
+            holder.salle.setText(event.getLieu() + " (déjà exporté)");
+        else
+            holder.salle.setText(event.getLieu());
         //holder.icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
         //holder.icon=(ImageView)row.findViewById(R.id.example_image);
         holder.horaires.setText(event.hourToString());

@@ -40,7 +40,7 @@ public class Ressource {
 
     public static ArrayList<Ressource> getRessourceList() {
         ArrayList<Ressource> ressourceList = new ArrayList<Ressource>();
-        Ressource res = new Ressource("3877", "M1 ILC", true);
+        Ressource res = new Ressource("3877", "M1 ILC", false);
         ressourceList.add(res);
         res = new Ressource("3823", "M1 ISI", false);
         ressourceList.add(res);
