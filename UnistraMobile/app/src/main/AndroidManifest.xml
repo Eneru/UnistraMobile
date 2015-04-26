@@ -5,6 +5,9 @@
     <uses-library android:name="com.google.android.maps" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
@@ -41,7 +44,14 @@
             android:name=".CalendrierActivity"
             android:label="@string/title_activity_calendrier" >
         </activity>
-
+        <activity
+            android:name=".ServiceActivity"
+            android:label="@string/title_activity_service" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".LoadingMap"
             android:label="LoadingMap" >
@@ -58,6 +68,22 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" >
         </activity>
+
+        <receiver android:name=".service.BackgroundReceiver"/>
+
+
+        <receiver android:name=".service.BootReceiver" android:enabled="false">
+
+
+        <intent-filter>
+
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+
+    </intent-filter>
+
+    </receiver>
+
+        <service android:name=".service.UpdateCal"/>
     </application>
 
 </manifest>

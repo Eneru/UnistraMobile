@@ -7,6 +7,7 @@
     <string name="title_activity_calendrier">CalendrierActivity</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_map">Map</string>
+    <string name="title_activity_service">Service</string>
     <string name="button_cancel_str">Annuler</string>
     <string name="button_sendto_str">Envoyer</string>
 

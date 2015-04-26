@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.mobile.unistra.unistramobile.MainActivity;
 import com.mobile.unistra.unistramobile.R;
@@ -26,7 +27,8 @@ public class UpdateCal extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        new LocalCal(this);
+        new LocalCal(this); sendNotification("Calendrier mis à jour");
+        Log.e("updatecal", "update cal lancé");
     }
 
     private void sendNotification(String msg) {
@@ -39,7 +41,7 @@ public class UpdateCal extends IntentService {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("Calendrier mis à jour")
+                        .setContentTitle(msg)
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(msg))
                         .setContentText(msg);

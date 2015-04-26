@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
+import android.util.Log;
 
 import java.util.Calendar;
 
@@ -36,11 +37,11 @@ public class BackgroundReceiver extends WakefulBroadcastReceiver
         Intent intent = new Intent(context, BackgroundReceiver.class);
         alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
+       Calendar calendar = Calendar.getInstance();
+     //   calendar.setTimeInMillis(System.currentTimeMillis());
         // Set the alarm's trigger time to 8:30 a.m.
-        calendar.set(Calendar.HOUR_OF_DAY, 8);
-        calendar.set(Calendar.MINUTE, 30);
+       // calendar.set(Calendar.HOUR_OF_DAY, 8);
+       // calendar.set(Calendar.MINUTE, 30);
 
         /*
          * If you don't have precise time requirements, use an inexact repeating alarm
@@ -68,15 +69,16 @@ public class BackgroundReceiver extends WakefulBroadcastReceiver
          *
          * // Wake up the device to fire the alarm in 30 minutes, and every 30 minutes
          * // after that.
-         * alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-         *         AlarmManager.INTERVAL_HALF_HOUR,
-         *         AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
          */
+        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                  AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
+        Log.e("background receiver","background lancé");
 
         // Set the alarm to fire at approximately 8:30 a.m., according to the device's
         // clock, and to repeat once a day.
-        alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, alarmIntent);
+        ///alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+         //       calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, alarmIntent);
 
         // Enable {@code SampleBootReceiver} to automatically restart the alarm when the
         // device is rebooted.
