@@ -39,7 +39,8 @@
         </activity>
         <activity
             android:name=".CalendrierActivity"
-            android:label="@string/title_activity_calendrier" >
+            android:label="@string/title_activity_calendrier"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity
