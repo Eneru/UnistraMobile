@@ -37,17 +37,13 @@ import com.mobile.unistra.unistramobile.calendrier.Ressource;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.TimeZone;
 
 public class CalendrierActivity extends FragmentActivity implements OnItemSelectedListener{
@@ -65,7 +61,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     EventAdapter adapter;
     MyCustomAdapter dataAdapter;
     String ressource="";
-
     String calendriers[];
 
     @Override
@@ -88,7 +83,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-
         agendaLocal.getSelectedCalendarId();
         spinner.setSelection(Integer.parseInt(agendaLocal.getSelectedCalendarId())-1);
 
@@ -97,7 +91,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         Integer[] items = new Integer[]{1,2,3,4,5,6};
         ArrayAdapter<Integer> adaptSpinner = new ArrayAdapter<Integer>(this,android.R.layout.simple_spinner_item, items);
         choixSemaines.setAdapter(adaptSpinner);
-
+        choixSemaines.setSelection(3);
 
         // Initialisation du widget Caldroid
         caldroidFragment = new CaldroidFragment();
@@ -111,18 +105,15 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
             args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
             caldroidFragment.setArguments(args);
-    }
+        }
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
         t.replace(R.id.calendar1, caldroidFragment);
         t.commit();
 
-
         // Setup listener
-        final SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
         listener = new CaldroidListener() {
             @Override
             public void onSelectDate(Date date, View view) {
-                //toasterNotif("Clic sur la date");
                 initiatePopupWindow(date);
             }
 
@@ -132,8 +123,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
             @Override
             public void onLongClickDate(Date date, View view) {
-                //toasterNotif("Clic long");
-                // On proposera de supprimer la date donnée ?
             }
 
             @Override
@@ -146,7 +135,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         colorCalendrierLocal();
 
         // Chargement des ressources
-        ressource = chargerRessources(this);
+        ressource = LocalCal.chargerRessources(this);
         if(ressource.equals(""))ressource = "4308";
 
         //Actions du bouton Ressources
@@ -164,8 +153,11 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             @Override
             public void onClick(View view) {
                 try {
-                    calendrier = new Calendrier(ressource/*txtRessource.getText().toString()*/,String.valueOf((int) choixSemaines.getSelectedItem()));
-                    Log.e("Valeur du Spinner",String.valueOf((int) choixSemaines.getSelectedItem()));
+                    if(calendrier!=null){
+                        for(Event e:calendrier.listeEvents)
+                            caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_white,new Date(e.getDebut().getTimeInMillis()));
+                    }
+                    calendrier = new Calendrier(ressource,String.valueOf((int) choixSemaines.getSelectedItem()));
                     sauvegarderRessources(getBaseContext(), calendrier.getRessources());
                     LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 } catch (Exception e) {
@@ -174,11 +166,12 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 if(calendrier != null){
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    colorCalendrier();
-                }else toasterNotif("Connexion impossible");
+                    caldroidFragment.refreshView();
+                    colorCalendrierLocal();
+                    colorCalendrierTelecharge();
+                }else toasterNotif("Calendrier introuvable");
             }
         });
-
 
         // Actions du bouton Exporter
         Button btn_export = (Button) findViewById(R.id.exportButton);
@@ -189,7 +182,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     agendaLocal.exportAgenda(getApplicationContext() ,calendrier);
                     toasterNotif("Événements ajoutés à l'agenda");
                     agendaLocal.comparerAgendaEvent(calendrier);
-                    colorCalendrier();
+                    colorCalendrierTelecharge();
                     LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
                 }
             }
@@ -198,8 +191,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_calendrier, menu);
         return true;
     }
 
@@ -239,36 +230,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         }
     }
 
-
-
-    /**
-     * Charge les ressources du fichier sur le téléphone.
-     * @return Un <b>String</b> contenant les ressources  enregistrées.
-     */
-    public String chargerRessources(Context context){
-        FileInputStream fIn = null;
-        InputStreamReader isr = null;
-
-        char[] inputBuffer = new char[255];
-        String data = "";
-
-        try{
-            fIn = context.openFileInput("ressources.csv");
-            isr = new InputStreamReader(fIn);
-            isr.read(inputBuffer);
-            data = new String(inputBuffer);
-            int lastInt = Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(
-                    data.lastIndexOf('0'),data.lastIndexOf('1')),data.lastIndexOf('2')),data.lastIndexOf('3')),data.lastIndexOf('4')),
-                    data.lastIndexOf('5')),data.lastIndexOf('6')),data.lastIndexOf('7')),data.lastIndexOf('8')),data.lastIndexOf('9'));
-            data = data.substring(0,lastInt+1);
-            toasterNotif("Préférences chargées");
-        }
-        catch (Exception e) {
-            Log.e("chargerRessources","Les ressources n'ont pas pu être chargées");
-        }
-        return data;
-    }
-
     /**
      * Affiche un toast : le message sur fond noir en bas, qui disparaît au bout de quelques secondes.
      * @param text Texte à afficher en toast
@@ -280,12 +241,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         toast.show();
     }
 
-
     /**
      * Colore les événements trouvés
      */
-    private void colorCalendrier(){
-
+    private void colorCalendrierTelecharge(){
         for(Event e:calendrier.listeEvents){
             if(e.doublon)
                 caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_darker_gray,new Date(e.getDebut().getTimeInMillis()));
@@ -315,7 +274,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         Cursor managedCursor = contentResolver.query(calendars, projection, null, null, null);
 
         if (managedCursor.moveToFirst()){
-            //m_calendars = new MyCalendar[managedCursor.getCount()];
             calendriers = new String[managedCursor.getCount()]; //AJOUT RECENT
             String calName;
             String calID;
@@ -359,13 +317,12 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         if (calendrier != null) {
             calendrier.refresh();
             agendaLocal.comparerAgendaEvent(calendrier);
-            colorCalendrier();
+            colorCalendrierTelecharge();
         }
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
-        // TODO Auto-generated method stub
     }
 
     public int convertDpToPixel(float dp) {
@@ -418,19 +375,14 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 @Override
                 public void onStartOpen(int position, int action, boolean right) {
-                    //Log.d("swipe", String.format("onStartOpen %d - action %d", position, action));
                 }
 
                 @Override
                 public void onStartClose(int position, boolean right) {
-                    //Log.d("swipe", String.format("onStartClose %d", position));
                 }
 
                 @Override
                 public void onClickFrontView(int position) {
-                    //Log.d("swipe", String.format("onClickFrontView %d", position));
-
-                    //swipelistview.openAnimate(position); //when you touch front view it will open
                 }
 
                 @Override
@@ -445,7 +397,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     eventsDuJour.remove(reverseSortedPositions[0]);
                     adapter.notifyDataSetChanged();
                 }
-
             });
 
             //These are the swipe listview settings. you can change these
@@ -475,10 +426,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 @Override
                 public void onClick(View v) {
                     //Sauvegarde, puis quitter
-                    if(calendrier != null) {
+                    if(calendrier != null)
                         for (Event e : aEffacer)
                             calendrier.remove(e);
-                    }else
+                    else
                         for(Event e:aEffacer)
                             agendaLocal.remove(e);
                     pwindo.dismiss();
@@ -498,7 +449,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
             pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-
             //On noircit l'arrière plan (en rendant opaque la plaque noire en premier plan de celui-ci)
             panneauDeBase.getForeground().setAlpha( 200);
 
@@ -515,19 +465,16 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        // TODO Auto-generated method stub
         super.onSaveInstanceState(outState);
 
-        if (caldroidFragment != null) {
+        if (caldroidFragment != null)
             caldroidFragment.saveStatesToKey(outState, "CALDROID_SAVED_STATE");
-        }
     }
 
     private void displayListView() {
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.ressource_list, null);
 
-        //Array list of countries
         final ArrayList<Ressource> ressourceList = listeRessources;
 
         //create an ArrayAdaptar from the String Array
@@ -537,14 +484,17 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         // Assign adapter to ListView
         listView.setAdapter(dataAdapter);
 
+        /**
+         * On pourra corriger la ressource en cliquant dessus
+         */
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 // When clicked, show a toast with the TextView text
-                Ressource res = (Ressource) parent.getItemAtPosition(position);
+                /*Ressource res = (Ressource) parent.getItemAtPosition(position);
                 Toast.makeText(getApplicationContext(),
                         "Clicked on Row: " + res.getName(),
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_LONG).show();*/
 
             }
         });
@@ -594,7 +544,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
             ViewHolder holder = null;
             Log.v("ConvertView", String.valueOf(position));
 
@@ -620,9 +569,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     }
                 });
             }
-            else {
-                holder = (ViewHolder) convertView.getTag();
-            }
+            else holder = (ViewHolder) convertView.getTag();
 
             Ressource ressource = countryList.get(position);
             holder.code.setText(" (" +  ressource.getCode() + ")");
@@ -631,10 +578,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             holder.name.setTag(ressource);
 
             return convertView;
-
         }
     }
-
 
     private void checkButtonClick() {
          ressource = "";
@@ -650,7 +595,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
               }
          }
 
-        Toast.makeText(getApplicationContext(),
-            ressource, Toast.LENGTH_LONG).show();
+        /*Toast.makeText(getApplicationContext(),
+            ressource, Toast.LENGTH_LONG).show();*/
     }
 }

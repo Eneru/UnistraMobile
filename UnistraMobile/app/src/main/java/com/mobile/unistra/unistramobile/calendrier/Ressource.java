@@ -6,8 +6,6 @@ import java.util.ArrayList;
  * Created by Alexandre on 26-04-15.
  */
 public class Ressource {
-
-
     String code = null;
     String name = null;
     boolean selected = false;
@@ -44,7 +42,7 @@ public class Ressource {
         ArrayList<Ressource> ressourceList = new ArrayList<Ressource>();
         Ressource res = new Ressource("3877", "M1 ILC", true);
         ressourceList.add(res);
-        res = new Ressource("3822", "M1 ISI", false);
+        res = new Ressource("3823", "M1 ISI", false);
         ressourceList.add(res);
         res = new Ressource("4044", "M1 RISE", false);
         ressourceList.add(res);
@@ -54,7 +52,17 @@ public class Ressource {
         ressourceList.add(res);
         res = new Ressource("4094", "M2 RISE", false);
         ressourceList.add(res);
-        res = new Ressource("5316", "J5", false);
+        res = new Ressource("5319", "Salle J0a", false);
+        ressourceList.add(res);
+        res = new Ressource("5251", "Salle J1", false);
+        ressourceList.add(res);
+        res = new Ressource("5250", "Salle J2", false);
+        ressourceList.add(res);
+        res = new Ressource("5249", "Salle J3", false);
+        ressourceList.add(res);
+        res = new Ressource("5317", "Salle J4", false);
+        ressourceList.add(res);
+        res = new Ressource("5316", "Salle J5", false);
         ressourceList.add(res);
         return ressourceList;
     }
