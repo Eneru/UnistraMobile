@@ -13,6 +13,7 @@ public class Event {
     String description;
     public boolean doublon;
     public boolean alarme;
+    public String nomRessource;
 
     public Event(String titreCours, String dateDebut, String dateFin){
         this.titreCours = titreCours;

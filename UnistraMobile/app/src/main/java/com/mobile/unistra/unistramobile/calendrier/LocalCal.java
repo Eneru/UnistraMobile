@@ -90,7 +90,7 @@ public class LocalCal {
 
     public String getSelectedCalendarId(){return this.selectedCalendarId;}
 
-    public String chargerRessources(Context context){
+    public static String chargerRessources(Context context){
         FileInputStream fIn = null;
         InputStreamReader isr = null;
 

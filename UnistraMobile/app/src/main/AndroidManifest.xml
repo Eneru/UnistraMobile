@@ -85,5 +85,4 @@
 
         <service android:name=".service.UpdateCal"/>
     </application>
-
 </manifest>
