@@ -61,16 +61,6 @@ public class Calendrier extends Wget {
     }
 
     /**
-     * Permet de vérifier si le fichier téléchargé ressemble bien à un fichier <emph>.ics</emph>.
-     * @return <b>true</b>, si le fichier commence bien par <emph>BEGIN:VCALENDAR</emph> et termine par <emph>END:VCALENDAR</emph>.
-     */
-    public boolean estValide(){
-        if(this.getHtml().substring(0,15).equalsIgnoreCase("BEGIN:VCALENDAR"))
-            return true;
-        else return false;
-    }
-
-    /**
      * Renvoit le premier nom de matière qui figure dans <emph>entree</emph>.
      * @param entree Chaîne de caractère à analyser ; si possible un seul événement à la fois.
      * @return Le nom de la matière seulement, sous forme de <b>String</b>.
@@ -200,20 +190,6 @@ public class Calendrier extends Wget {
     }
 
     /**
-     * Retourne le <b>String</b> qui pourra être affiché.
-     * <br>On ajoute tous les événements.
-     * @return Chaîne de caractère représentant la liste des événements.
-     */
-    public String afficherEvent(){
-        String affichage="";
-        for(Event event:listeEvents)
-            affichage += event.titreCours + " : "
-                      + event.salle + (event.doublon?"EST UN DOUBLON":"isok") + "\n\tà "
-                      + event.getDebut().getTimeInMillis() +"\n";
-        return affichage;
-    }
-
-    /**
      * Donne la liste de tous les événements en format brut : <emph>BEGIN:VEVENT ... END:VEVENT</emph>.
      * <br>On pourra utiliser afficherEvent(p) sur chaque String p de ce tableau, ou n'importe quelle autre méthode de parsage.
      * @return Un tableau de String, non ordonné.
@@ -247,6 +223,11 @@ public class Calendrier extends Wget {
         return trierListe(liste);
     }
 
+    /**
+     * Donne la liste des Event du jour donné.
+     * @param date Date de laquelle on veut les jours.
+     * @return ArrayListe d'Event du le même jour.
+     */
     public ArrayList<Event> listeEventsJour(GregorianCalendar date){
         ArrayList<Event> liste = new ArrayList<Event>();
 
@@ -285,6 +266,11 @@ public class Calendrier extends Wget {
         }
     }
 
+    /**
+     * Trie la liste d'événements par date.
+     * @param listeATrier Liste d'Event à trier.
+     * @return La liste triée
+     */
     private ArrayList<Event> trierListe(ArrayList<Event> listeATrier){
         Collections.sort(listeATrier, new Comparator<Event>() {
             @Override
