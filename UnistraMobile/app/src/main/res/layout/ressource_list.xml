@@ -23,11 +23,26 @@
     </LinearLayout>
 
 
-    <Button
-        android:id="@+id/findSelected"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajouter une ressource" />
+        android:layout_gravity="center_horizontal">
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/checkBoxRes"
+            android:checked="false" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/idRess"
+            android:layout_weight="1" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/listViewRessources"

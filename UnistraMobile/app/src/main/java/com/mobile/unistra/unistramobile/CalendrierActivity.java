@@ -512,6 +512,9 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             }
         });
 
+        final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.checkBoxRes);
+        final TextView idRes = (TextView) layout.findViewById(R.id.idRess);
+
         //Bouton Valider
         Button btnValider = (Button) layout.findViewById(R.id.btnValider);
         btnValider.setOnClickListener(new View.OnClickListener() {
@@ -519,10 +522,19 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             public void onClick(View v) {
                 //Sauvegarde, puis quitter
                 checkButtonClick();
+                if(checkBox.isChecked()){
+                    if(!idRes.getText().toString().equals("")){
+                        if(ressource.equals(""))
+                            ressource = idRes.getText().toString();
+                        else
+                            ressource += "," + idRes.getText().toString();
+                        selectedRes.setText(ressource);
+                    }
+                }
                 pwindo.dismiss();
             }
         });
-
+        
         //Création et positionnement de la fenêtre popup
         pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
