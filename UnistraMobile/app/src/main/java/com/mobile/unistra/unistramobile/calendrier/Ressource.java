@@ -10,6 +10,12 @@ public class Ressource {
     String name = null;
     boolean selected = false;
 
+    /**
+     * Représente une ressource avec son titre
+     * @param code Identifiant, servant à être envoyé à l'ADE pour récupérer l'agenda en ligne
+     * @param name Titre de la ressource. Rend la liste de ressources plus lisible pour l'utilisateur.
+     * @param selected Indique s'il doit être sélectionné par défaut par l'interface graphique.
+     */
     public Ressource(String code, String name, boolean selected) {
         super();
         this.code = code;
@@ -17,19 +23,14 @@ public class Ressource {
         this.selected = selected;
     }
 
-    public String getCode() {
-        return code;
-    }
-    public void setCode(String code) {
-        this.code = code;
-    }
+    //Getters, setters...
+    public String getCode() {return code;}
     public String getName() {
         return name;
     }
     public void setName(String name) {
         this.name = name;
     }
-
     public boolean isSelected() {
         return selected;
     }
@@ -37,7 +38,11 @@ public class Ressource {
         this.selected = selected;
     }
 
-
+    /**
+     * Génère une liste de ressources.
+     * <br>Elle est "hard-coded", mais pourra être dynamique et être basée sur un fichier texte, par exemple.
+     * @return Une ArrayList de ressources, utilisable par la ListView de CalendarActivity.
+     */
     public static ArrayList<Ressource> getRessourceList() {
         ArrayList<Ressource> ressourceList = new ArrayList<Ressource>();
         Ressource res = new Ressource("3877", "M1 ILC", false);

@@ -29,10 +29,18 @@ public class LocalCal {
     private String selectedCalendarId;
     private String ressource;
 
+    /**
+     * Récupère la liste des événements dans l'agendaLocal
+     * @return Une ArrayList de Event.
+     */
     public ArrayList<Event> getEvents(){
         return agendaLocal;
     }
 
+    /**
+     * Supprime un événement du calendrier enregistré
+     * @param e Evenement à retirer de l'agenda.
+     */
     public void remove(Event e){
         agendaLocal.remove(e);
     }
@@ -55,6 +63,7 @@ public class LocalCal {
                     ContentResolver cr = context.getContentResolver();
                     ContentValues values = new ContentValues();
 
+                    //On prépare l'événements à enregistrer
                     values.put(CalendarContract.Events.DTSTART, event.getDebut().getTimeInMillis());
                     values.put(CalendarContract.Events.DTEND, event.getFin().getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, event.getTitre());
@@ -65,31 +74,24 @@ public class LocalCal {
                     values.put(CalendarContract.Events.CALENDAR_ID, selectedCalendarId);
                     values.put(CalendarContract.Events.HAS_ALARM, event.getAlarme()?1:0);
 
-                    //values.put(CalendarContract.Events.RRULE, "FREQ=DAILY;UNTIL="
-                    //        + dtUntill);
-                    //for one hour
-                    //values.put(CalendarContract.Events.DURATION, "+P1H");
-
-                    //values.put(CalendarContract.Events.HAS_ALARM, 1);
-
-                /*if (hasAlert == true) {
-                    long eventId = Long.parseLong(uri.getLastPathSegment());
-                    calendarEventContentValues.clear();
-                    calendarEventContentValues.put("event_id", eventId);
-                    calendarEventContentValues.put("method", 1);
-                    calendarEventContentValues.put("minutes", alertTime);
-                    contentResolver.insert(Uri.parse(reminderProviderName), calendarEventContentValues);
-                }*/
-
-                    // insert event to calendar
+                    // Enregistre l'événement
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                 }
             }
         }
     }
 
+    /**
+     * Récupère l'identifiant, ce qui permet ensuite de cibler le bon calendrier sur le téléphone.
+     * @return L'identifiant, sous forme de String
+     */
     public String getSelectedCalendarId(){return this.selectedCalendarId;}
 
+    /**
+     * Charge les ressources à partir du fichier ressources.csv
+     * @param context Le contexte appelant la méthode.
+     * @return Un String de la forme : "4308" ou "4308,322",...
+     */
     public static String chargerRessources(Context context){
         FileInputStream fIn = null;
         InputStreamReader isr = null;
@@ -102,6 +104,8 @@ public class LocalCal {
             isr = new InputStreamReader(fIn);
             isr.read(inputBuffer);
             data = new String(inputBuffer);
+
+            // Parsage empêchant certaines erreurs liées à la lecture bufferisée
             int lastInt = Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(
                             data.lastIndexOf('0'),data.lastIndexOf('1')),data.lastIndexOf('2')),data.lastIndexOf('3')),data.lastIndexOf('4')),
                     data.lastIndexOf('5')),data.lastIndexOf('6')),data.lastIndexOf('7')),data.lastIndexOf('8')),data.lastIndexOf('9'));
@@ -111,8 +115,10 @@ public class LocalCal {
         }
         return data;
     }
+
     /**
-     * Sauvegarde les ressources entrées en recherche dans un fichier sur le téléphone.
+     * Sauvegarde l'agenda choisi dans un fichier sur le téléphone.
+     * <br>Cela permettra au programme de lire ce fichier pour proposer directement cet agenda.
      */
     public static void sauvegarderCalendrier(Context context, String data){
         FileOutputStream fOut = null;
@@ -134,6 +140,12 @@ public class LocalCal {
             }
         }
     }
+
+    /**
+     * Charge le dernier agenda utilisé pour enregistrer des événements.
+     * @param context Contexte appelant la méthode.
+     * @return Un String contenant un chiffre (identifiant de l'agenda) si un enregistrement a déjà été fait, "" sinon.
+     */
     public String chargerCalendrier(Context context){
         FileInputStream fIn = null;
         InputStreamReader isr = null;
@@ -211,6 +223,11 @@ public class LocalCal {
         }
     }
 
+    /**
+     * Méthode permettant de ne récupérer que les événements d'une date donnée.
+     * @param date Date pour laquelle on veut les événements
+     * @return Une ArrayList d'Event de même date (jour/mois/année).
+     */
     public ArrayList<Event> listeEventsJour(GregorianCalendar date){
         ArrayList<Event> liste = new ArrayList<Event>();
 

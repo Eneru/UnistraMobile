@@ -136,11 +136,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         // Affichage du calendrier local
         colorCalendrierLocal();
 
-        // Chargement des ressources
-        //ressource = LocalCal.chargerRessources(this);
-        //if(ressource.equals(""))ressource = "4308";
-
-        //Actions du bouton Ressources
+        // Actions du bouton Ressources
         btnRessource= (Button) findViewById(R.id.ressourceEditButton);
         btnRessource.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -154,14 +150,15 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
+                // On efface tous les événements, s'il y en avait avant
                 if (calendrier != null) {
                     for (Event e : calendrier.listeEvents)
                         caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_white, new Date(e.getDebut().getTimeInMillis()));
                     colorCalendrierLocal();
                 }
                 if(!ressource.equals("")) {
+                    // On cherche le calendrier demandé
                     try {
-
                         calendrier = new Calendrier(ressource, String.valueOf((int) choixSemaines.getSelectedItem()));
                         sauvegarderRessources(getBaseContext(), calendrier.getRessources());
                         LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
@@ -179,7 +176,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             }
         });
 
-        // Actions du bouton Exporter
+        // Actions du bouton Enregistrer
         Button btn_export = (Button) findViewById(R.id.exportButton);
         btn_export.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,6 +187,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                     agendaLocal.comparerAgendaEvent(calendrier);
                     colorCalendrierTelecharge();
                     LocalCal.sauvegarderCalendrier(getBaseContext(), String.valueOf(spinner.getSelectedItemId() + 1));
+                }else{
+                    toasterNotif("Pas d'événements à enregistrer");
                 }
             }
         });
@@ -252,10 +251,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
      */
     private void colorCalendrierTelecharge(){
         for(Event e:calendrier.listeEvents){
-            /*if(e.doublon)
-                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
-            else*/
-                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
+            caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_holo_blue_light,new Date(e.getDebut().getTimeInMillis()));
             caldroidFragment.refreshView();
         }
     }
@@ -264,7 +260,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
      * Colore les événements trouvés sur l'agenda local
      */
     private void colorCalendrierLocal(){
-        //int couleur = R.color.caldroid_gray;
         int couleur = R.color.caldroid_transparent;
         for(Event event:agendaLocal.getEvents()){
             caldroidFragment.setBackgroundResourceForDate(couleur, new Date(event.getDebut().getTimeInMillis()));
@@ -272,6 +267,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         }
     }
 
+    /**
+     * Va chercher les calendrier du téléphone.
+     * @param c Le contexte appelant la méthode.
+     */
     public void getCalendar(Context c) {
         String projection[] = {"_id", "calendar_displayName"};
         Uri calendars;
@@ -298,7 +297,8 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     }
 
     /**
-     * Ce qu'il se passe quand on appuie sur un élément de la liste de calendriers
+     * Ce qu'il se passe quand on appuie sur un élément de la liste de calendriers :
+     * <br>On redessine le calendrier avec les nouveaux éléments chargés.
      */
     public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
         // Chargement du calendrier local
@@ -332,15 +332,24 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
     public void onNothingSelected(AdapterView<?> arg0) {
     }
 
+    /**
+     * Convertit les dp en pixels
+     * @param dp Valeur à convertir en pixels
+     * @return Un int représentant le même point/distance/... en pixels
+     */
     public int convertDpToPixel(float dp) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float px = dp * (metrics.densityDpi / 160f);
         return (int) px;
     }
 
+    /**
+     * Appelle un popup contenant une liste d'événements swipeables pour une date spécifique.
+     * @param date Date dont on affichera les événements.
+     */
     private void initiatePopupWindow(Date date) {
         //On convertit la date en GregorianCalendar, car Date est deprecated
-        GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
+        final GregorianCalendar dateVoulue =  new GregorianCalendar(TimeZone.getTimeZone("Europe/Paris"));
         dateVoulue.setTime(date);
 
         //On met le tout sous forme de String[] pour pouvoir le mettre dans une liste.
@@ -360,7 +369,6 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             //Formation de la liste
             swipelistview = (SwipeListView) layout.findViewById(R.id.example_swipe_lv_list);
             adapter=new EventAdapter(this,R.layout.custom_row,eventsDuJour);
-
 
             //Formation de la swipeList avec les Listeners
             swipelistview.setSwipeListViewListener(new BaseSwipeListViewListener() {
@@ -394,21 +402,19 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
                 @Override
                 public void onClickBackView(int position) {
-                    Log.d("swipe", String.format("onClickBackView %d", position));
-                    swipelistview.closeAnimate(position);//when you touch back view it will close
                 }
 
                 @Override
                 public void onDismiss(int[] reverseSortedPositions) {
+                    //Actions se passant lorsque l'on swipe un objet de la liste
                     aEffacer.add(eventsDuJour.get(reverseSortedPositions[0]));
                     eventsDuJour.remove(reverseSortedPositions[0]);
                     adapter.notifyDataSetChanged();
                 }
             });
 
-            //These are the swipe listview settings. you can change these
-            //setting as your requrement
-            if(calendrier != null) {
+            //Paramètres de la SwipeList
+            if(calendrier != null) { //Pas de swipe sur l'agenda local
                 swipelistview.setSwipeMode(SwipeListView.SWIPE_MODE_BOTH);
                 swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_DISMISS);
                 swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_DISMISS);
@@ -417,10 +423,10 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_NONE);
                 swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_NONE);
             }
-            swipelistview.setOffsetLeft(convertDpToPixel(260f)); // left side offset
-            swipelistview.setOffsetRight(convertDpToPixel(0f)); // right side offset
-            swipelistview.setAnimationTime(50); // animarion time
-            swipelistview.setSwipeOpenOnLongPress(false); // enable or disable SwipeOpenOnLongPress
+            swipelistview.setOffsetLeft(convertDpToPixel(260f));
+            swipelistview.setOffsetRight(convertDpToPixel(0f));
+            swipelistview.setAnimationTime(50);
+            swipelistview.setSwipeOpenOnLongPress(false);
 
             swipelistview.setAdapter(adapter);
 
@@ -439,12 +445,20 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                 @Override
                 public void onClick(View v) {
                     //Sauvegarde, puis quitter
-                    if(calendrier != null)
+                    if(calendrier != null) {
                         for (Event e : aEffacer)
                             calendrier.remove(e);
-                    else
+                        if(calendrier.listeEventsJour(dateVoulue).isEmpty()){
+                            if(agendaLocal.listeEventsJour(dateVoulue).isEmpty())
+                                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_white, dateVoulue.getTime());
+                            else
+                                caldroidFragment.setBackgroundResourceForDate(R.color.caldroid_transparent, dateVoulue.getTime());
+                            caldroidFragment.refreshView();
+                        }
+                    }else
                         for(Event e:aEffacer)
                             agendaLocal.remove(e);
+
                     pwindo.dismiss();
                 }
             });
@@ -484,34 +498,21 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             caldroidFragment.saveStatesToKey(outState, "CALDROID_SAVED_STATE");
     }
 
+    /**
+     * Méthde appelant la fenêtre popup contenant la liste de ressources à "check"
+     */
     private void displayListView() {
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.ressource_list, null);
 
+        //Liste de ressources, avec l'Adapter
         final ArrayList<Ressource> ressourceList = listeRessources;
-
-        //create an ArrayAdaptar from the String Array
         dataAdapter = new MyCustomAdapter(this,
                 R.layout.custom_list, ressourceList);
         ListView listView = (ListView) layout.findViewById(R.id.listViewRessources);
-        // Assign adapter to ListView
         listView.setAdapter(dataAdapter);
 
-        /**
-         * On pourra corriger la ressource en cliquant dessus
-         */
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                // When clicked, show a toast with the TextView text
-                /*Ressource res = (Ressource) parent.getItemAtPosition(position);
-                Toast.makeText(getApplicationContext(),
-                        "Clicked on Row: " + res.getName(),
-                        Toast.LENGTH_LONG).show();*/
-
-            }
-        });
-
+        //Champ servant à ajouter sa propre ressource.
         final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.checkBoxRes);
         final TextView idRes = (TextView) layout.findViewById(R.id.idRess);
 
@@ -528,13 +529,13 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
                             ressource = idRes.getText().toString();
                         else
                             ressource += "," + idRes.getText().toString();
-                        selectedRes.setText(ressource);
                     }
                 }
+                selectedRes.setText(ressource);
                 pwindo.dismiss();
             }
         });
-        
+
         //Création et positionnement de la fenêtre popup
         pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
@@ -552,14 +553,18 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         });
     }
 
+    /**
+     * Classe d'adaptateur de liste :
+     * On veut pouvoir insérer une liste de ressources dans une ListView
+     */
     private class MyCustomAdapter extends ArrayAdapter<Ressource> {
-        private ArrayList<Ressource> countryList;
+        private ArrayList<Ressource> ressourceList;
 
         public MyCustomAdapter(Context context, int textViewResourceId,
-                               ArrayList<Ressource> countryList) {
-            super(context, textViewResourceId, countryList);
-            this.countryList = new ArrayList<Ressource>();
-            this.countryList.addAll(countryList);
+                               ArrayList<Ressource> ressourceList) {
+            super(context, textViewResourceId, ressourceList);
+            this.ressourceList = new ArrayList<Ressource>();
+            this.ressourceList.addAll(ressourceList);
         }
 
         private class ViewHolder {
@@ -592,7 +597,7 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
             }
             else holder = (ViewHolder) convertView.getTag();
 
-            Ressource ressource = countryList.get(position);
+            Ressource ressource = ressourceList.get(position);
             holder.code.setText(" (" +  ressource.getCode() + ")");
             holder.name.setText(ressource.getName());
             holder.name.setChecked(ressource.isSelected());
@@ -602,24 +607,22 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
         }
     }
 
+    /**
+     * Méthode appelée par la fenêtre contenant la liste des ressources à "check".
+     * <br>Elle permet simplement de vérifier quelles cases sont cochées.
+     */
     private void checkButtonClick() {
-         ressource = "";
-        String amettre="";
-        ArrayList<Ressource> ressourceList = dataAdapter.countryList;
+        ressource = "";
+        ArrayList<Ressource> ressourceList = dataAdapter.ressourceList;
         for(int i=0;i<ressourceList.size();i++){
              Ressource res = ressourceList.get(i);
              if(res.isSelected()){
                  if(ressource.equals("")) {
                      ressource = res.getCode();
-                     amettre = res.getName();
                  }else {
                      ressource += "," + res.getCode();
-                     amettre += ", " + res.getName();
                  }
              }
         }
-        selectedRes.setText(amettre);
-        /*Toast.makeText(getApplicationContext(),
-            ressource, Toast.LENGTH_LONG).show();*/
     }
 }
