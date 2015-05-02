@@ -408,9 +408,15 @@ public class CalendrierActivity extends FragmentActivity implements OnItemSelect
 
             //These are the swipe listview settings. you can change these
             //setting as your requrement
-            swipelistview.setSwipeMode(SwipeListView.SWIPE_MODE_BOTH);
-            swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_DISMISS);//.SWIPE_ACTION_REVEAL); //there are four swipe actions
-            swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_DISMISS);//SWIPE_ACTION_REVEAL);
+            if(calendrier != null) {
+                swipelistview.setSwipeMode(SwipeListView.SWIPE_MODE_BOTH);
+                swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_DISMISS);
+                swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_DISMISS);
+            }else {
+                swipelistview.setSwipeMode(SwipeListView.SWIPE_MODE_NONE);
+                swipelistview.setSwipeActionLeft(SwipeListView.SWIPE_ACTION_NONE);
+                swipelistview.setSwipeActionRight(SwipeListView.SWIPE_ACTION_NONE);
+            }
             swipelistview.setOffsetLeft(convertDpToPixel(260f)); // left side offset
             swipelistview.setOffsetRight(convertDpToPixel(0f)); // right side offset
             swipelistview.setAnimationTime(50); // animarion time
