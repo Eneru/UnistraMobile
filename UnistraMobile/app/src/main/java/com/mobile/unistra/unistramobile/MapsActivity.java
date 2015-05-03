@@ -29,6 +29,7 @@ public class MapsActivity extends FragmentActivity implements  LocationListener,
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private MapsActivity me;
+    private boolean first = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +65,11 @@ public class MapsActivity extends FragmentActivity implements  LocationListener,
             LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
            // mMarker = mMap.addMarker(new MarkerOptions().position(loc));
 
-            if(mMap != null){
+            if(mMap != null && first){
 
-                AsyncTask<Void, Integer, Boolean> iti = new ItineraireTask(me, mMap, location.getLatitude()+","+location.getLongitude(), "Strasbourg").execute();
+                AsyncTask<Void, Integer, Boolean> iti = new ItineraireTask(me, mMap, location.getLatitude()+","+location.getLongitude(), Global.dest).execute();
               //  mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
+                first = false;
             }
         }
     };

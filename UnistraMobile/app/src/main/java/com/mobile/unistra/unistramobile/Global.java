@@ -5,6 +5,6 @@ package com.mobile.unistra.unistramobile;
  */
 public class Global
 {
-    static public String destiantion;
+    static public String dest = "strasbourg";
     static public String origine;
 }
