@@ -8,7 +8,7 @@
 
     <TextView android:text="Auto update du calendrier" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView"
+        android:id="@+id/textView_ru_list"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="47dp" />
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:text="On"
         android:id="@+id/on"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/textView_ru_list"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="45dp" />
 

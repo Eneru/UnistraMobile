@@ -42,6 +42,15 @@ public class MainActivity extends ActionBarActivity {
             }
 
         });
+
+        ImageButton btn_ru = (ImageButton) findViewById(R.id.imageButton2);
+        btn_ru.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goRu= new Intent(MainActivity.this,RUActivity.class);
+                startActivity(goRu);
+            }
+        });
     }
 
 

@@ -10,5 +10,8 @@
     <string name="title_activity_service">Service</string>
     <string name="button_cancel_str">Annuler</string>
     <string name="button_sendto_str">Envoyer</string>
+    <string name="title_activity_ru">RUActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 
 </resources>
