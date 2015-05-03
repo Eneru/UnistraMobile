@@ -44,13 +44,10 @@ public class MapsActivity extends FragmentActivity implements  LocationListener,
                 .addOnConnectionFailedListener(this)
                 .build();
         createLocationRequest();
+        this.first=true;
 
 
        //gMap = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
-
-        //On récupère le départ et l'arrivée
-        final String editDepart = "Strasbourg";
-        final String editArrivee = "Saverne";
         me = this;
         //Appel de la méthode asynchrone
      //   new ItineraireTask(this, mMap, editDepart, editArrivee).execute();
