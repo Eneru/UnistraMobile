@@ -1,6 +1,7 @@
 package com.mobile.unistra.unistramobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -45,6 +47,7 @@ public class RUActivity extends ActionBarActivity {
     private Spinner sp_ru;
     private Spinner sp_jr;
     private ListView lv;
+    private Button localisation;
 
 
     private int current_ru;
@@ -78,7 +81,7 @@ public class RUActivity extends ActionBarActivity {
         sp_jr = (Spinner)findViewById(R.id.spinner_jour_ru);
         List<String> spinnerArray_jr = new ArrayList<>();
         Collections.addAll(spinnerArray_jr, jour);
-        ArrayAdapter<String> adapter_jr = new ArrayAdapter<>(this,
+        final ArrayAdapter<String> adapter_jr = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item,spinnerArray_jr);
         adapter_jr.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp_jr.setAdapter(adapter_jr);
@@ -364,6 +367,16 @@ public class RUActivity extends ActionBarActivity {
                     };
                     lv.setAdapter(test);
                 }
+            }
+        });
+
+        localisation = (Button)findViewById(R.id.button_localiser);
+        localisation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Global.dest = adress_rue_map.get(ru_valide[sp_ru.getSelectedItemPosition()]);
+                Intent goMap= new Intent(RUActivity.this,LoadingMap.class);
+                startActivity(goMap);
             }
         });
     }
