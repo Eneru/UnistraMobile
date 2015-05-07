@@ -29,6 +29,7 @@ public class UpdateCal extends IntentService {
     {
         new LocalCal(this); sendNotification("Calendrier mis à jour");
         Log.e("updatecal", "update cal lancé");
+        BackgroundReceiver.completeWakefulIntent(intent);
     }
 
     private void sendNotification(String msg) {

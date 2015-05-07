@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class AnnuaireActivity extends ActionBarActivity {
+public class AnnuaireActivity extends Activity {
 
     private String prefix;
     private AtomContactListAdapter adapter;
@@ -211,14 +211,14 @@ public class AnnuaireActivity extends ActionBarActivity {
     }
 
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_annuaire, menu);
         return true;
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -231,7 +231,7 @@ public class AnnuaireActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
     /*
     private void dialog_mail(final String mail)

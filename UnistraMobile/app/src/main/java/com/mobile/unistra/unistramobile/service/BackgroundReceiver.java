@@ -23,7 +23,8 @@ public class BackgroundReceiver extends WakefulBroadcastReceiver
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
+        Intent service = new Intent(context,UpdateCal.class);
+        startWakefulService(context,service);
     }
 
     // BEGIN_INCLUDE(set_alarm)
@@ -71,8 +72,8 @@ public class BackgroundReceiver extends WakefulBroadcastReceiver
          * // after that.
          */
         alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                  AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
+                 AlarmManager.INTERVAL_HALF_DAY,
+                  AlarmManager.INTERVAL_HALF_DAY, alarmIntent);
         Log.e("background receiver","background lancé");
 
         // Set the alarm to fire at approximately 8:30 a.m., according to the device's
