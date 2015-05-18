@@ -1,21 +1,24 @@
 package com.mobile.unistra.unistramobile;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
-        Button btn_annu = (Button) findViewById(R.id.button_annu);
+
+        ImageButton btn_annu = (ImageButton) findViewById(R.id.imageButton4);
         btn_annu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -23,7 +26,7 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(goAnnu);
             }
         });
-        Button btn_calen = (Button) findViewById(R.id.button_calen);
+        ImageButton btn_calen = (ImageButton) findViewById(R.id.imageButton);
         btn_calen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -31,17 +34,36 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(goCalen);
             }
         });
+
+        ImageButton btn_map = (ImageButton) findViewById(R.id.imageButton3);
+        btn_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent goMap= new Intent(MainActivity.this,ServiceActivity.class);
+                startActivity(goMap);
+            }
+
+        });
+
+        ImageButton btn_ru = (ImageButton) findViewById(R.id.imageButton2);
+        btn_ru.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goRu= new Intent(MainActivity.this,RUActivity.class);
+                startActivity(goRu);
+            }
+        });
     }
 
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -54,5 +76,5 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 }

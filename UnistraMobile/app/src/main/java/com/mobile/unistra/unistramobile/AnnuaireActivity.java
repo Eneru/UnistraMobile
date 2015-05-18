@@ -1,57 +1,224 @@
 package com.mobile.unistra.unistramobile;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mobile.unistra.unistramobile.annuaire.Annuaire;
 import com.mobile.unistra.unistramobile.annuaire.NoResultException;
+import com.mobile.unistra.unistramobile.annuaire.Prof;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class AnnuaireActivity extends ActionBarActivity {
+public class AnnuaireActivity extends Activity {
+
+    private String prefix;
+    private AtomContactListAdapter adapter;
+
+    private ListView listView;
+    private LinearLayout layout;
+    private EditText editText;
+
+    private CountDownTimer short_countDownTimer;
+    private CountDownTimer long_countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_annuaire);
-        Button btn_search = (Button) findViewById(R.id.button_search);
-        btn_search.setOnClickListener(new View.OnClickListener() {
+        _init_view();
+    }
+
+    private void _init_view()
+    {
+        adapter = new AtomContactListAdapter
+                (AnnuaireActivity.this,R.layout.list_annuaire_item,new ArrayList<AtomContact>());
+        editText = (EditText)findViewById(R.id.nameEditText);
+        listView = (ListView)findViewById(R.id.list_recherche);
+        listView.setAdapter(adapter);
+        layout = (LinearLayout)findViewById(R.id.progressbar_view);
+        long_countDownTimer=new CountDownTimer(2500,2500) {
             @Override
-            public void onClick(View view) {
-                EditText txtName= (EditText) findViewById(R.id.nameEditText);
-                try {
-                    Annuaire annu = new Annuaire("",txtName.getText().toString() , "", "","");
-                    TextView txt = (TextView) findViewById(R.id.result_txt);
-                    txt.setText(annu.getProf(0).getIdentite()+" "+annu.getProf(0).getMail());
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NoResultException e) {
-                    e.printStackTrace();
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                new Task().execute();
+            }
+        };
+
+        short_countDownTimer=new CountDownTimer(1500,1500) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                new Task().execute();
+            }
+        };
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if (s.length()>4) // Si le texte fait plus de 4 lettres on utilise que le timer court
+                {
+                    short_countDownTimer.cancel();
+                    short_countDownTimer.start();
                 }
+                else if (s.length()==4) // Si le texte fait 4 lettres on annule le timer long et on restart le court
+                {
+                    long_countDownTimer.cancel();
+                    short_countDownTimer.cancel();
+                    short_countDownTimer.start();
+                }
+                else if (s.length()==3) // Si le texte fait 3 lettres on annule le timer court et on restart le long
+                {
+                    short_countDownTimer.cancel();
+                    long_countDownTimer.cancel();
+                    long_countDownTimer.start();
+                }
+                else if (s.length()>0) // Si le texte n'est pas null on restart le timer long
+                {
+                    long_countDownTimer.cancel();
+                    long_countDownTimer.start();
+                }
+                else // Si le texte est null on efface tout et on arrete le timer
+                {
+                    long_countDownTimer.cancel();
+                    prefix = null;
+                    adapter.clear();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
 
             }
         });
     }
 
+    class Task extends AsyncTask<String, Integer, Boolean> {
+        @Override
+        protected void onPreExecute() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    layout.setVisibility(View.VISIBLE);
+                    listView.setVisibility(View.GONE);
+                    prefix = editText.getText().toString();
+                    editText.setEnabled(false);
+                }
+            });
+            super.onPreExecute();
+        }
 
-    @Override
+        @Override
+        protected void onPostExecute(Boolean result) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    layout.setVisibility(View.GONE);
+                    listView.setVisibility(View.VISIBLE);
+                    editText.setEnabled(true);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+            super.onPostExecute(result);
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            try {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                        adapter.clear();
+                    }
+                });
+                try
+                {
+                    String[] recherche = prefix.split(" ");
+                    Annuaire annuaire;
+                    if (recherche.length >= 2)
+                        annuaire = new Annuaire(recherche[1],recherche[0],"","","");
+                    else
+                        annuaire = new Annuaire("",recherche[0],"","","");
+                    ArrayList<Prof> profs = annuaire.getAnnuaire();
+                    int i=0;
+                    for (final Prof p : profs) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                adapter.add
+                                        (new AtomContact(p.getIdentite(), p.getTelephone(), p.getMail()));
+                            }
+                        });
+                    }
+                }
+                catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }catch (NoResultException e) {
+                    e.printStackTrace();
+                    editText.setText(editText.getText().toString().substring(0,editText.getText().toString().length()-2));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_annuaire, menu);
         return true;
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -64,5 +231,171 @@ public class AnnuaireActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }*/
+
+    /*
+    private void dialog_mail(final String mail)
+    {
+        final String sujet= "Ajouter un sujet";
+        final String corps= "Ajouter un corps au courriel";
+        AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+        // Get the layout inflater
+        LayoutInflater inflater = getLayoutInflater();
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(inflater.inflate(R.layout.dialog_mail, null))
+                // Add action buttons
+                .setPositiveButton(R.string.button_sendto_str, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        EditText subject = (EditText) findViewById(R.id.subject_mail);
+                        EditText body = (EditText) findViewById(R.id.body_mail);
+
+                        if (subject.getText().length() == 0)
+                            subject.setText(sujet);
+                        if (body.getText().length() == 0)
+                            body.setText(corps);
+
+                        if (subject.getText().length() != 0
+                                && body.getText().length() != 0
+                                && !body.getText().toString().equals(corps)
+                                && !subject.getText().toString().equals(sujet)) {
+                            //mail_teacher(mail, subject.getText().toString(), body.getText().toString());
+                            dialog.dismiss();
+                        }
+
+                    }
+                })
+                .setNegativeButton(R.string.button_cancel_str, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    */
+}
+
+class AtomContact implements Serializable {
+    private static final long serialVersionUID = -5435670920302756945L;
+
+    private String name = "";
+    private String num = "";
+    private String mail ="";
+
+    public AtomContact(String name, String num, String mail) {
+        this.setName(name);
+        this.setNum(num);
+        this.setMail(mail);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getNum() {
+        return num;
+    }
+
+    public void setNum(String num) {
+        this.num = num;
+    }
+
+    public String getMail ()
+    {
+        return mail;
+    }
+
+    public void setMail (String mail)
+    {
+        this.mail = mail;
+    }
+}
+
+class AtomContactListAdapter extends ArrayAdapter<AtomContact> {
+
+    protected static final String LOG_TAG = AtomContactListAdapter.class.getSimpleName();
+
+    private List<AtomContact> items;
+    private int layoutResourceId;
+    private Context context;
+
+    public AtomContactListAdapter(Context context, int layoutResourceId, List<AtomContact> items) {
+        super(context, layoutResourceId, items);
+        this.layoutResourceId = layoutResourceId;
+        this.context = context;
+        this.items = items;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View row = convertView;
+        AtomContactHolder holder = null;
+
+        LayoutInflater inflater = ((Activity) context).getLayoutInflater();
+        row = inflater.inflate(layoutResourceId, parent, false);
+
+        holder = new AtomContactHolder();
+        holder.atomContact = items.get(position);
+        holder.call = (ImageButton)row.findViewById(R.id.image_button_appeler);
+        final AtomContactHolder finalHolder = holder;
+        holder.call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String number= finalHolder.atomContact.getNum();
+                call_teacher(number);
+            }
+        });
+        holder.call.setTag(holder.atomContact);
+        holder.sendto = (ImageButton)row.findViewById(R.id.image_button_mailer);
+        holder.sendto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = finalHolder.atomContact.getMail();
+                mail_teacher(email);
+            }
+        });
+        holder.sendto.setTag(holder.atomContact);
+        holder.name = (TextView)row.findViewById(R.id.identity_text);
+        row.setTag(holder);
+
+        setupItem(holder);
+        return row;
+    }
+
+    private void setupItem(AtomContactHolder holder) {
+        holder.name.setText(holder.atomContact.getName());
+    }
+
+    public void call_teacher (String number)
+    {
+        String nb = "tel:" + number.replace(".","");
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse(nb));
+        getContext().startActivity(intent);
+    }
+
+    private void mail_teacher (String mail)
+    {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        String uritext = "mailto:" + Uri.encode(mail)
+                +"?subject=&body=";
+        Uri uri = Uri.parse(uritext);
+
+        intent.setData(uri);
+        getContext().startActivity(Intent.createChooser(intent, "Envoi du courriel..."));
+    }
+
+    public static class AtomContactHolder {
+        AtomContact atomContact;
+        TextView name;
+        ImageButton call;
+        ImageButton sendto;
     }
 }

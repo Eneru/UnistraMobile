@@ -1,97 +1,127 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.mobile.unistra.unistramobile.CalendrierActivity">
+    android:id="@+id/panneauDeBase"
+    tools:context="com.mobile.unistra.unistramobile.CalendrierActivity"
+    android:background="#ffffff"
+    android:screenOrientation="portrait"
+    android:foreground="@drawable/dim">
+    <!--android:foreground="@drawable/dim"-->
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Rechercher"
-        android:id="@+id/button_search"
-        android:layout_marginTop="50dp"
-        android:layout_below="@+id/weekEditText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="4308"
-        android:ems="10"
-        android:id="@+id/ressourceEditText"
-        android:layout_marginTop="20dp"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/labelRessource" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rechercher"
+            android:id="@+id/button_search"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/result_txt"
-        android:layout_below="@+id/button_search"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="60dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="10"
-        android:ems="10"
-        android:id="@+id/weekEditText"
-        android:layout_marginTop="43dp"
-        android:layout_below="@+id/ressourceEditText"
-        android:layout_alignLeft="@+id/ressourceEditText"
-        android:layout_alignStart="@+id/ressourceEditText" />
-
-    <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/result_txt"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/result_txt"
-        android:background="#ffffffff"
-        android:focusable="false">
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="Ressource"
+            android:ems="10"
+            android:id="@+id/ressourceEditButton"
+            android:layout_below="@+id/spinner"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:id="@+id/reslutTextView" />
-    </ScrollView>
+            android:id="@+id/result_txt"
+            android:layout_below="@+id/button_search"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="60dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ressource :"
-        android:id="@+id/labelRessource"
-        android:layout_alignTop="@+id/ressourceEditText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/weekSpinner"
+            android:spinnerMode="dropdown"
+            android:background="@color/caldroid_lighter_gray"
+            android:textAlignment="center"
+            android:touchscreenBlocksFocus="false"
+            android:layout_below="@+id/labelSemaines"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignLeft="@+id/labelSemaines"
+            android:layout_alignStart="@+id/labelSemaines"
+            android:layout_above="@+id/ressourceEditButton" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Semaines :"
-        android:id="@+id/labelSemaines"
-        android:layout_alignTop="@+id/weekEditText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Résultat :"
-        android:id="@+id/labelResultat"
-        android:layout_alignBottom="@+id/result_txt"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Semaines :"
+            android:id="@+id/labelSemaines"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
-</RelativeLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer"
+            android:id="@+id/exportButton"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
+
+        <fragment
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:name="com.roomorama.caldroid.DateGridFragment"
+            android:id="@+id/calendar1"
+            android:layout_below="@+id/ressourceEditButton"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/labelCalendrier"
+            android:text="Calendrier :"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinner"
+            android:spinnerMode="dropdown"
+            android:background="@color/caldroid_lighter_gray"
+            android:layout_below="@+id/labelCalendrier"
+            android:layout_alignRight="@+id/ressourceEditButton"
+            android:layout_alignEnd="@+id/ressourceEditButton"
+            android:layout_toRightOf="@+id/result_txt"
+            android:layout_toEndOf="@+id/result_txt" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:id="@+id/selectedRes"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@+id/ressourceEditButton"
+            android:layout_toRightOf="@+id/ressourceEditButton"
+            android:layout_toEndOf="@+id/ressourceEditButton"
+            android:layout_below="@+id/weekSpinner"
+            android:textAlignment="center"
+            android:gravity="center_vertical|center_horizontal"
+            android:textColor="#000000" />
+    </RelativeLayout>
+</FrameLayout>

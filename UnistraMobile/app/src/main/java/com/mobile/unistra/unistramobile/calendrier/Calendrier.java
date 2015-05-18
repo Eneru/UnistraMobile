@@ -1,16 +1,36 @@
 package com.mobile.unistra.unistramobile.calendrier;
 
-import com.mobile.unistra.unistramobile.calendrier.Wget;
-import net.fortuna.ical4j.model.Calendar;
+import android.content.Context;
+
+import com.mobile.unistra.unistramobile.annuaire.Wget;
+
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
+
 
 /**
  * Created by Alexandre on 22-02-15.
  */
 public class Calendrier extends Wget {
-    TimeZone fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
+    TimeZone fuseauHoraire;
+    public ArrayList<Event> listeEvents;
+    String ressources;
+
+    /**
+     * Surcharge de concatHtml, servant à avoir un format qui m'arrange.
+     * @see com.mobile.unistra.unistramobile.annuaire.Wget#run()
+     * @param s ligne lue.
+     */
+    @Override
+    protected void concatHtml(String s) {
+        html += s + '\n';
+    }
 
     /**
      * Constructeur de Calendrier. Il utilise la classe <b>Wget</b> de Nicolas.
@@ -26,18 +46,18 @@ public class Calendrier extends Wget {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //Le tri des informations reçues aura probablement lieu ici
-        this.interrupt();
+        // Le fuseau horaire permet d'adapter heure d'hiver/été
+        fuseauHoraire = TimeZone.getTimeZone("Europe/Paris");
+
+        this.listeEvents = listeEvents();
+        this.ressources = ressource;
     }
 
-    /**
-     * Permet de vérifier si le fichier téléchargé ressemble bien à un fichier <emph>.ics</emph>.
-     * @return <b>true</b>, si le fichier commence bien par <emph>BEGIN:VCALENDAR</emph> et termine par <emph>END:VCALENDAR</emph>.
-     */
-    public boolean estValide(){
-        if(this.getHtml().substring(0,15).equalsIgnoreCase("BEGIN:VCALENDAR"))
-            return true;
-        else return false;
+    public void remove(Event e){
+        listeEvents.remove(e);
+    }
+    public void refresh(){
+        listeEvents = listeEvents();
     }
 
     /**
@@ -49,67 +69,124 @@ public class Calendrier extends Wget {
         return entree.substring(entree.indexOf("SUMMARY:") + 8, entree.indexOf('\n', entree.indexOf("SUMMARY:") + 8));
     }
 
-
+    /**
+     * Renvoit le lieu qui figure dans <emph>entree</emph>.
+     * @param entree Chaîne de caractère à analyser ; si possible un seul événement à la fois.
+     * @return Le lieu, sous forme de <b>String</b>.
+     */
     public String nomLieu(String entree){
         return entree.substring(entree.indexOf("LOCATION:") + 9, entree.indexOf('\n', entree.indexOf("LOCATION:") + 9));
     }
 
     /**
-     * L'heure de début.
-     * @param entree
-     * @param date      La date à laquelle l'heure s'applique : permet d'adapter l'heure au fuseau horaire et à l'heure d'hiver/été
-     * @return          Un String contenant l'heure et les minutes, séparés d'un 'h'
+     * Appelle les méthodes de parsage pour générer une <b>Date</b> complète, faisant figurer heure, minutes, jour, mois, année.
+     * <br>Il s'adapte au changement d'heure hiver/été.
+     * @param entree <b>String</b> correspondant à un événement d'un VCALENDAR
+     * @return Une <b>Date</b>, corresondant à la date (et heure) de fin d'un événement.
      */
-    public String heureDebut(String entree, Date date){
-        int offset = entree.indexOf("DTSTART:")+17;
-        int heure = Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    public Date dateFin(String entree){
+        int annee = anneeFin(entree);
+        int mois = moisFin(entree);
+        int jour = jourFin(entree);
+        int heure = heureFin(entree);
+        int minutes = minutesFin(entree);
 
-        //Si on est en heure d'été, on rajoute une heure
-        if(fuseauHoraire.inDaylightTime(date)) heure ++;
+        Date dateFin = new Date(annee-1900,mois,jour,heure,minutes);
 
-        return heure + "h"+ entree.substring(offset +2, offset + 4);
+        if (fuseauHoraire.inDaylightTime(dateFin)) dateFin.setHours(heure+1);
+        return dateFin;
+    }
+
+    public int minutesFin(String entree){
+        int offset = entree.indexOf("DTEND:") + 17;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int heureFin(String entree) {
+        int offset = entree.indexOf("DTEND:") + 15;
+        return Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    }
+
+    public int jourFin(String entree){
+        int offset = entree.indexOf("DTEND:")+12;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int moisFin(String entree){
+        int offset = entree.indexOf("DTEND:")+10;
+        return Integer.parseInt(entree.substring(offset, offset + 2))-1;
+    }
+
+    public int anneeFin(String entree){
+        int offset = entree.indexOf("DTEND:")+6;
+        return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
     /**
-     * L'heure de fin.
-     * @param entree
-     * @param date      La date à laquelle l'heure s'applique : permet d'adapter l'heure au fuseau horaire et à l'heure d'hiver/été
-     * @return          Un String contenant l'heure et les minutes, séparés d'un 'h'
+     * Appelle les méthodes de parsage pour générer une <b>Date</b> complète, faisant figurer heure, minutes, jour, mois, année.
+     * <br>Il s'adapte au changement d'heure hiver/été.
+     * @param entree <b>String</b> correspondant à un événement d'un VCALENDAR
+     * @return Une <b>Date</b>, corresondant à la date (et heure) de début d'un événement.
      */
-    public String heureFin(String entree, Date date){
-        int offset = entree.indexOf("DTEND:")+15;
-        int heure = Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    public Date dateDebut(String entree) {
+        int annee = anneeDebut(entree);
+        int mois = moisDebut(entree);
+        int jour = jourDebut(entree);
+        int heure = heureDebut(entree);
+        int minutes = minutesDebut(entree);
 
-        //Si on est en heure d'été, on rajoute une heure
-        if(fuseauHoraire.inDaylightTime(date)) heure ++;
-
-        return heure + "h"+ entree.substring(offset +2, offset + 4);
+        Date dateDebut = new Date(annee - 1900, mois, jour, heure, minutes);
+        if(fuseauHoraire.inDaylightTime(dateDebut)) dateDebut.setHours(heure+1);
+        return dateDebut;
     }
 
-    public String jourDebut(String entree){
+    public int minutesDebut(String entree){
+        int offset = entree.indexOf("DTSTART:") + 19;
+        return Integer.parseInt(entree.substring(offset, offset + 2));
+    }
+
+    public int heureDebut(String entree) {
+        int offset = entree.indexOf("DTSTART:") + 17;
+        return Integer.parseInt(entree.substring(offset, offset + 2)) + (fuseauHoraire.getRawOffset() / 3600000);
+    }
+
+    public int jourDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+14;
-        return entree.substring(offset, offset + 2);
+        return Integer.parseInt(entree.substring(offset, offset + 2));
     }
 
-    public String moisDebut(String entree){
+    public int moisDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+12;
-        return entree.substring(offset, offset + 2);
+        return Integer.parseInt(entree.substring(offset, offset + 2))-1;
     }
 
-    public String anneeDebut(String entree){
+    public int anneeDebut(String entree){
         int offset = entree.indexOf("DTSTART:")+8;
-        return entree.substring(offset, offset + 4);
+        return Integer.parseInt(entree.substring(offset, offset + 4));
     }
 
+    /**
+     * Parse un <b>String</b> pour y trouver la description.
+     * @param entree String correspondant à un événement d'un VCALENDAR
+     * @return String correspondant à la description
+     */
+    public String description(String entree){
+        int debut = entree.indexOf("DESCRIPTION:")+12;
+        int fin = entree.indexOf("\n",debut);
+        String retour = entree.substring(debut,fin);
+        retour = retour.replaceAll("\\\\n","\n");//Pour échapper un backslash il en faut 4 d'affilée.
+        return retour;
+    }
 
-    public String afficherEvent(String entree){
-        int jour = Integer.parseInt(jourDebut(entree));
-        int mois = Integer.parseInt(moisDebut(entree));
-        int annee = Integer.parseInt(anneeDebut(entree));
-        String heureDebut = heureDebut(entree, new Date(annee,mois,jour));
-        String heureFin = heureFin(entree, new Date(annee,mois,jour));
-
-        return nomMatiere(entree) + " : de "+ heureDebut + " à " + heureFin + " le " + jourDebut(entree) + "/" + moisDebut(entree) + "/" + anneeDebut(entree) + ", en salle : "+ nomLieu(entree);
+    /**
+     * Parse un <b>String</b> pour y trouver l'UID.
+     * @param entree String correspondant à un événement d'un VCALENDAR
+     * @return String correspondant à l'UID
+     */
+    public String Uid(String entree){
+        int debut = entree.indexOf("UID:")+4;
+        int fin = entree.indexOf("\n",debut);
+        return entree.substring(debut, fin);
     }
 
     /**
@@ -132,5 +209,75 @@ public class Calendrier extends Wget {
             parse = parse.substring(parse.indexOf("END:VEVENT")+11);
         }
         return resultat;
+    }
+
+    /**
+     * Crée une liste de <b>Event</b> à partir des événements donnés en format <b>String</b>.
+     * <b>Ne doit être utilisée qu'au tout début du programme ! Ce n'est pas un "get"</b>
+     * @return Une liste de <b>Event</b> non ordonnée.
+     */
+    private ArrayList<Event> listeEvents(){
+        ArrayList<Event> liste = new ArrayList<Event>();
+        for(String entree: donnerEvents())
+            liste.add(genererEvent(entree));
+        return trierListe(liste);
+    }
+
+    /**
+     * Donne la liste des Event du jour donné.
+     * @param date Date de laquelle on veut les jours.
+     * @return ArrayListe d'Event du le même jour.
+     */
+    public ArrayList<Event> listeEventsJour(GregorianCalendar date){
+        ArrayList<Event> liste = new ArrayList<Event>();
+
+        for(Event e: this.listeEvents) {
+            if(date.get(Calendar.DAY_OF_YEAR) == e.dateDebut.get(Calendar.DAY_OF_YEAR))
+                liste.add(e);
+        }
+        return liste;
+    }
+
+    /**
+     * Appelle le constructeur de <b>Event</b> avec comme paramètre les méthodes de parsage correspondants aux champs.
+     * @param entree <b>String</b> représentant un événement au format brut.
+     * @return Un <b>Event</b> initialisé et prêt à l'emploi.
+     */
+    private Event genererEvent(String entree){
+        return new Event(Uid(entree), nomMatiere(entree),nomLieu(entree),description(entree),dateDebut(entree),dateFin(entree));
+    }
+
+    /**
+     * Renvoit la liste des ressources sous format <b>String</b>.
+     * <br>On aura donc un <b>String</b> de la forme : "4208" ou "3012,123,123"
+     * @return Une chaîne de caractère contenant des nombres, séparés par des virgules (pas d'espace)
+     */
+    public String getRessources(){return this.ressources;}
+    public ArrayList<Event> getEvents(){return this.listeEvents;}
+
+    public void filtrerDoublons(ArrayList<Event> agendaLocal){
+        for(Event local : agendaLocal){
+            for(Event recu : this.listeEvents){
+                if(!recu.estDoublon() && recu.equals(local)){
+                    recu.setDoublon(true);
+                    local.setDoublon(true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Trie la liste d'événements par date.
+     * @param listeATrier Liste d'Event à trier.
+     * @return La liste triée
+     */
+    private ArrayList<Event> trierListe(ArrayList<Event> listeATrier){
+        Collections.sort(listeATrier, new Comparator<Event>() {
+            @Override
+            public int compare(Event event1, Event event2) {
+                return event1.getDebut().compareTo(event2.getDebut());
+            }
+        });
+        return listeATrier;
     }
 }
